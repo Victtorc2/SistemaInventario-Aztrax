@@ -1,12 +1,4 @@
-/**
- * Cliente Axios central.
- *
- * - baseURL leída desde la variable de entorno VITE_API_URL.
- * - Interceptor de REQUEST: añade automáticamente el header
- *   `Authorization: Bearer <token>` si hay sesión.
- * - Interceptor de RESPONSE: ante un 401 limpia el token y emite un evento
- *   global para que el AuthContext cierre la sesión y redirija a /login.
- */
+
 
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { getToken, removeToken } from "@/utils/auth";
@@ -14,7 +6,7 @@ import { getToken, removeToken } from "@/utils/auth";
 /** Evento global emitido cuando el backend responde 401 (sesión inválida). */
 export const UNAUTHORIZED_EVENT = "auth:unauthorized";
 
-const baseURL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+const baseURL = import.meta.env.VITE_API_URL ?? "https://web-production-1e1c3.up.railway.app/";
 
 export const axiosClient = axios.create({
   baseURL,
