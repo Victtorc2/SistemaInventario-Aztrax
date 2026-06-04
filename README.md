@@ -116,9 +116,3 @@ npm run build            # build de producción
 `/` → `/inicio` · `/login` (pública) · protegidas: `/inicio`, `/categorias`,
 `/productos`, `/proveedores`, `/ventas`, `/productos-por-pedir`, `/historial`.
 
-## Credenciales de prueba
-correo `admin@sistema.com` · password `admin123`
-
-> Nota: la columna "Productos" de la tabla de categorías se muestra como "—"
-> porque el endpoint actual del backend no devuelve ese conteo. Cuando lo
-> exponga (p. ej. `productos_count`), se lee directamente en CategoriaTable.
