@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans;
+  }
+
+  /* Tipografía con tracking ligeramente ajustado para un look refinado. */
+  h1,
+  h2,
+  h3 {
+    @apply tracking-tight;
+  }
+}
+
+@layer utilities {
+  /* Patrón sutil de puntos para dar atmósfera al fondo de autenticación. */
+  .bg-dotgrid {
+    background-image: radial-gradient(circle, rgba(10, 10, 10, 0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
