@@ -13,6 +13,7 @@
 
 import { useState } from "react";
 import { Pencil, Trash2, Tags } from "lucide-react";
+import { ActionIcon } from "@/components/ui/ActionIcon";
 import { Pagination } from "@/components/ui/Pagination";
 import type { Categoria } from "@/types/categoria";
 
@@ -102,22 +103,20 @@ export function CategoriaTable({
                 <td className="px-5 py-4 text-ink-soft">{formatDate(c.created_at)}</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center justify-end gap-1">
-                    <button
-                      type="button"
+                    <ActionIcon
+                      intent="edit"
+                      label={`Editar ${c.nombre}`}
                       onClick={() => onEdit(c)}
-                      className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                      aria-label={`Editar ${c.nombre}`}
                     >
                       <Pencil size={16} />
-                    </button>
-                    <button
-                      type="button"
+                    </ActionIcon>
+                    <ActionIcon
+                      intent="delete"
+                      label={`Eliminar ${c.nombre}`}
                       onClick={() => onDelete(c)}
-                      className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-danger/10 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
-                      aria-label={`Eliminar ${c.nombre}`}
                     >
                       <Trash2 size={16} />
-                    </button>
+                    </ActionIcon>
                   </div>
                 </td>
               </tr>

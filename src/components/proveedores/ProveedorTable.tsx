@@ -14,6 +14,7 @@
 import { useState } from "react";
 import { Pencil, Trash2, Truck } from "lucide-react";
 import { ProveedorCard } from "@/components/proveedores/ProveedorCard";
+import { ActionIcon } from "@/components/ui/ActionIcon";
 import { Pagination } from "@/components/ui/Pagination";
 import type { Proveedor } from "@/types/proveedor";
 
@@ -129,22 +130,20 @@ export function ProveedorTable({
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
-                      <button
-                        type="button"
+                      <ActionIcon
+                        intent="edit"
+                        label={`Editar ${p.nombre}`}
                         onClick={() => onEdit(p)}
-                        className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                        aria-label={`Editar ${p.nombre}`}
                       >
                         <Pencil size={16} />
-                      </button>
-                      <button
-                        type="button"
+                      </ActionIcon>
+                      <ActionIcon
+                        intent="delete"
+                        label={`Eliminar ${p.nombre}`}
                         onClick={() => onDelete(p)}
-                        className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-danger/10 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
-                        aria-label={`Eliminar ${p.nombre}`}
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </ActionIcon>
                     </div>
                   </td>
                 </tr>

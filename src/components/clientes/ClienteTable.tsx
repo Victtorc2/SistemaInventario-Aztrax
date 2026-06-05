@@ -8,6 +8,7 @@
 import { Wallet, Pencil, Trash2 } from "lucide-react";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ActionIcon } from "@/components/ui/ActionIcon";
 import { Users } from "lucide-react";
 import { formatMoney } from "@/utils/format";
 import type { Cliente } from "@/types/cliente";
@@ -84,33 +85,27 @@ export function ClienteTable({
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
-                      <button
-                        type="button"
+                      <ActionIcon
+                        intent="account"
+                        label={`Estado de cuenta de ${c.nombre}`}
                         onClick={() => onEstadoCuenta(c)}
-                        title="Estado de cuenta"
-                        aria-label="Estado de cuenta"
-                        className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-accent-soft hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                       >
                         <Wallet size={16} />
-                      </button>
-                      <button
-                        type="button"
+                      </ActionIcon>
+                      <ActionIcon
+                        intent="edit"
+                        label={`Editar ${c.nombre}`}
                         onClick={() => onEdit(c)}
-                        title="Editar"
-                        aria-label="Editar"
-                        className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                       >
                         <Pencil size={16} />
-                      </button>
-                      <button
-                        type="button"
+                      </ActionIcon>
+                      <ActionIcon
+                        intent="delete"
+                        label={`Eliminar ${c.nombre}`}
                         onClick={() => onDelete(c)}
-                        title="Eliminar"
-                        aria-label="Eliminar"
-                        className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-danger/10 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </ActionIcon>
                     </div>
                   </td>
                 </tr>

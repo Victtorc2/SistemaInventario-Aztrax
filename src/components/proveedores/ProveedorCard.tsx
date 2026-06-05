@@ -6,6 +6,7 @@
  */
 
 import { Pencil, Trash2, Phone, MapPin, Hash } from "lucide-react";
+import { ActionIcon } from "@/components/ui/ActionIcon";
 import type { Proveedor } from "@/types/proveedor";
 
 interface ProveedorCardProps {
@@ -20,22 +21,20 @@ export function ProveedorCard({ proveedor, onEdit, onDelete }: ProveedorCardProp
       <div className="flex items-start justify-between gap-3">
         <p className="font-medium text-ink">{proveedor.nombre}</p>
         <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
+          <ActionIcon
+            intent="edit"
+            label={`Editar ${proveedor.nombre}`}
             onClick={() => onEdit(proveedor)}
-            className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-            aria-label={`Editar ${proveedor.nombre}`}
           >
             <Pencil size={16} />
-          </button>
-          <button
-            type="button"
+          </ActionIcon>
+          <ActionIcon
+            intent="delete"
+            label={`Eliminar ${proveedor.nombre}`}
             onClick={() => onDelete(proveedor)}
-            className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-danger/10 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
-            aria-label={`Eliminar ${proveedor.nombre}`}
           >
             <Trash2 size={16} />
-          </button>
+          </ActionIcon>
         </div>
       </div>
 

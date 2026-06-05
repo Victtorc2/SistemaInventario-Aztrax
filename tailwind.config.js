@@ -9,31 +9,35 @@ export default {
         mono: ["Geist Mono", "ui-monospace", "monospace"],
       },
       colors: {
-        // Paleta cálida y amigable: tinta con matiz suave (no gris frío),
-        // fondo crema y un acento índigo agradable. Mantiene el minimalismo
-        // pero resulta más cercano y menos severo que el negro puro.
+        // Paleta fría "slate" moderna: tinta gris-azulada nítida sobre un
+        // fondo casi blanco frío. Más crisp y profesional (estilo SaaS) que
+        // la versión cálida anterior. El acento índigo aporta el color de marca
+        // y se complementa con una familia semántica para identificar acciones.
         ink: {
-          DEFAULT: "#2e2a3f", // índigo muy oscuro en vez de negro
-          soft: "#56516b",
-          faint: "#8b86a0",
+          DEFAULT: "#0f172a", // slate-900
+          soft: "#475569", // slate-600
+          faint: "#94a3b8", // slate-400
         },
-        paper: "#faf8fc", // blanco cálido con leve tinte lila
-        line: "#ebe7f2", // borde suave en la misma familia
+        paper: "#f6f7f9", // gris muy claro y frío
+        line: "#e6e9ef", // borde frío suave
         accent: {
-          DEFAULT: "#6366f1", // indigo-500: botones primarios, activos
+          DEFAULT: "#4f46e5", // indigo-600: botones primarios, activos
           soft: "#eef2ff", // indigo-50: fondos suaves del acento
-          ring: "#6366f1",
+          ring: "#4f46e5",
         },
-        // Acentos secundarios para variedad amigable (uso puntual).
-        coral: "#fb7185", // rose-400
-        sky: "#38bdf8", // sky-400
-        amber: "#f59e0b",
-        danger: "#e11d48", // rose-600, coherente con la paleta cálida
+        // Familia semántica para identificar acciones por color (icon chips,
+        // botones y badges). Cada acción tiene un color consistente.
+        success: { DEFAULT: "#059669", soft: "#ecfdf5" }, // emerald-600 / 50
+        info: { DEFAULT: "#2563eb", soft: "#eff6ff" }, // blue-600 / 50
+        danger: "#e11d48", // rose-600
+        // Nota: sky/amber/rose/violet/emerald se usan vía las escalas nativas
+        // de Tailwind (sky-500, amber-50, etc.). No se redefinen como tokens
+        // string porque eso sobrescribiría la escala numérica completa.
       },
       boxShadow: {
-        // Sombras ligeras con leve tinte del acento, estilo dashboard moderno.
-        card: "0 1px 2px rgba(99,102,241,0.04), 0 8px 24px -12px rgba(99,102,241,0.18)",
-        focus: "0 0 0 3px rgba(99,102,241,0.15)",
+        // Sombras frías neutras, nítidas y discretas.
+        card: "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -12px rgba(15,23,42,0.12)",
+        focus: "0 0 0 3px rgba(79,70,229,0.15)",
       },
       borderRadius: {
         xl2: "1rem",

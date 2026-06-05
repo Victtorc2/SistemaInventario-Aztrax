@@ -17,7 +17,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 60% 50% at 50% 45%, transparent, rgba(250,250,249,0.9))",
+            "radial-gradient(ellipse 60% 50% at 50% 45%, transparent, rgba(246,247,249,0.9))",
         }}
         aria-hidden="true"
       />

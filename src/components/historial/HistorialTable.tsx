@@ -10,9 +10,9 @@
  */
 
 import { memo, useCallback } from "react";
-import type { ReactNode } from "react";
 import { Eye, FileText, Printer } from "lucide-react";
 import { formatMoney, formatDate } from "@/utils/format";
+import { ActionIcon } from "@/components/ui/ActionIcon";
 import { Pagination } from "@/components/ui/Pagination";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import type { HistorialItem } from "@/types/historial";
@@ -136,39 +136,17 @@ const HistorialRow = memo(function HistorialRow({
       </td>
       <td className="px-5 py-4">
         <div className="flex items-center justify-end gap-1">
-          <ActionButton label="Ver detalle" onClick={handleDetalle}>
+          <ActionIcon intent="view" label="Ver detalle" onClick={handleDetalle}>
             <Eye size={16} />
-          </ActionButton>
-          <ActionButton label="Ver boleta" onClick={handleBoleta}>
+          </ActionIcon>
+          <ActionIcon intent="edit" label="Ver boleta" onClick={handleBoleta}>
             <FileText size={16} />
-          </ActionButton>
-          <ActionButton label="Reimprimir" onClick={handleReimp}>
+          </ActionIcon>
+          <ActionIcon intent="print" label="Reimprimir" onClick={handleReimp}>
             <Printer size={16} />
-          </ActionButton>
+          </ActionIcon>
         </div>
       </td>
     </tr>
   );
 });
-
-function ActionButton({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={label}
-      aria-label={label}
-      className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus-visible:shadow-focus focus:outline-none"
-    >
-      {children}
-    </button>
-  );
-}
