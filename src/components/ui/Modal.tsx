@@ -79,7 +79,7 @@ export function Modal({
         ref={panelRef}
         tabIndex={-1}
         className={[
-          "animate-scale-in relative flex max-h-[90vh] w-full flex-col rounded-2xl border border-line bg-white shadow-card outline-none",
+          "animate-scale-in relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card outline-none",
           widthClassName,
         ].join(" ")}
       >
@@ -94,7 +94,10 @@ export function Modal({
             <X size={18} />
           </button>
         </div>
-        <div className="overflow-y-auto px-6 py-5">{children}</div>
+        {/* min-h-0 permite que esta zona se encoja dentro del panel flex y
+            active el scroll interno; sin él, el contenido largo desborda el
+            panel (cortando la parte superior del formulario). */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
       </div>
     </div>
   );
