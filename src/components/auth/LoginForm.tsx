@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { InputField } from "@/components/ui/InputField";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,6 +37,7 @@ export function LoginForm() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -71,10 +73,22 @@ export function LoginForm() {
 
       <InputField
         label="Contraseña"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="••••••••"
         autoComplete="current-password"
         error={errors.password?.message}
+        rightSlot={
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            className="rounded-md p-1.5 text-ink-faint transition-colors hover:text-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            aria-pressed={showPassword}
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        }
         {...register("password")}
       />
 
@@ -91,7 +105,7 @@ export function LoginForm() {
       <div className="flex items-center justify-end">
         <button
           type="button"
-          className="text-xs text-ink-faint transition-colors hover:text-ink-soft"
+          className="rounded text-xs text-ink-faint transition-colors hover:text-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
         >
           ¿Olvidaste tu contraseña?
         </button>

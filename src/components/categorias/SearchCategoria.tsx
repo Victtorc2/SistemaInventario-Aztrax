@@ -24,7 +24,7 @@ export function SearchCategoria({ value, onChange }: SearchCategoriaProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Buscar categoría…"
-        className="w-full rounded-lg border border-line bg-white py-2.5 pl-9 pr-3.5 text-sm text-ink placeholder:text-ink-faint/70 transition-all focus:border-ink focus:shadow-focus focus:outline-none sm:w-64"
+        className="w-full rounded-lg border border-line bg-white py-2.5 pl-9 pr-3.5 text-sm text-ink placeholder:text-ink-faint/70 transition-all focus:border-accent focus:shadow-focus focus:outline-none sm:w-64"
       />
     </div>
   );

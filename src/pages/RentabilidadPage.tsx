@@ -70,6 +70,17 @@ export function RentabilidadPage() {
     <PageContainer
       title="Rentabilidad"
       subtitle="Cuánto ganas: por producto y por periodo"
+      actions={
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-sm font-medium text-ink-soft transition-all hover:border-accent/40 hover:text-accent focus:outline-none focus-visible:shadow-focus focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          Refrescar
+        </button>
+      }
     >
       {/* Filtros */}
       <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-white p-3 shadow-card">
@@ -91,8 +102,9 @@ export function RentabilidadPage() {
           <button
             type="button"
             onClick={() => setAgrupar("dia")}
+            aria-pressed={agrupar === "dia"}
             className={[
-              "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+              "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
               agrupar === "dia" ? "bg-accent text-white" : "text-ink-soft hover:bg-line/60",
             ].join(" ")}
           >
@@ -101,8 +113,9 @@ export function RentabilidadPage() {
           <button
             type="button"
             onClick={() => setAgrupar("mes")}
+            aria-pressed={agrupar === "mes"}
             className={[
-              "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+              "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
               agrupar === "mes" ? "bg-accent text-white" : "text-ink-soft hover:bg-line/60",
             ].join(" ")}
           >
@@ -276,7 +289,7 @@ function RentabilidadPorProducto({ data }: { data: ReporteRentabilidad }) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead>
+          <thead className="bg-paper/50">
             <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
               <th className="px-5 py-3 font-medium">Producto</th>
               <th className="px-5 py-3 text-center font-medium">Uds.</th>

@@ -1,13 +1,15 @@
 /**
  * Modal: diálogo centrado reutilizable.
  *
- * - Overlay con desenfoque; clic fuera cierra (configurable).
+ * - Overlay con desenfoque y fundido; clic fuera cierra (configurable).
  * - Tecla Escape cierra.
  * - Bloquea el scroll del fondo mientras está abierto.
+ * - Gestiona el foco: al abrir enfoca el panel; al cerrar restaura el foco al
+ *   elemento que lo tenía antes (accesibilidad de teclado).
  * - Cabecera con título y botón de cierre; el contenido se pasa como children.
  */
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 interface ModalProps {
@@ -29,18 +31,29 @@ export function Modal({
   closeOnOverlay = true,
   widthClassName = "max-w-md",
 }: ModalProps) {
-  // Cerrar con Escape + bloquear scroll del body mientras está abierto.
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar con Escape + bloquear scroll del body + gestionar el foco.
   useEffect(() => {
     if (!open) return;
+
+    const previousActive = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    // Enfoca el panel al abrir (tras el primer paint).
+    const focusTimer = window.setTimeout(() => panelRef.current?.focus(), 0);
+
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
+      window.clearTimeout(focusTimer);
+      // Restaura el foco al disparador, si sigue en el DOM.
+      previousActive?.focus?.();
     };
   }, [open, onClose]);
 
@@ -55,7 +68,7 @@ export function Modal({
     >
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-ink/30 backdrop-blur-sm"
+        className="animate-fade-in absolute inset-0 bg-ink/30 backdrop-blur-sm"
         onClick={closeOnOverlay ? onClose : undefined}
         aria-hidden="true"
       />
@@ -63,8 +76,10 @@ export function Modal({
       {/* Panel: alto limitado al viewport; la cabecera queda fija y el
           contenido hace scroll interno si el formulario es largo. */}
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={[
-          "animate-fade-up relative flex max-h-[90vh] w-full flex-col rounded-2xl border border-line bg-white shadow-card",
+          "animate-scale-in relative flex max-h-[90vh] w-full flex-col rounded-2xl border border-line bg-white shadow-card outline-none",
           widthClassName,
         ].join(" ")}
       >
@@ -73,7 +88,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="-mr-1 rounded-lg p-1 text-ink-faint transition-colors hover:bg-line/60 hover:text-ink"
+            className="-mr-1 rounded-lg p-1 text-ink-faint transition-colors hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
             aria-label="Cerrar"
           >
             <X size={18} />

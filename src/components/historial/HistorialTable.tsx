@@ -54,7 +54,7 @@ export function HistorialTable({
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left text-sm">
-            <thead>
+            <thead className="bg-paper/50">
               <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
                 <th className="px-5 py-3 font-medium">Boleta</th>
                 <th className="px-5 py-3 font-medium">Fecha</th>

@@ -13,6 +13,7 @@
 
 import { useState } from "react";
 import { Pencil, Trash2, Tags } from "lucide-react";
+import { Pagination } from "@/components/ui/Pagination";
 import type { Categoria } from "@/types/categoria";
 
 const PAGE_SIZE = 10;
@@ -50,9 +51,10 @@ export function CategoriaTable({
   const visible = categorias.slice(start, start + PAGE_SIZE);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+    <div>
+      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
       <table className="w-full text-left text-sm">
-        <thead>
+        <thead className="bg-paper/50">
           <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
             <th className="px-5 py-3 font-medium">Nombre</th>
             <th className="px-5 py-3 font-medium">Productos</th>
@@ -103,7 +105,7 @@ export function CategoriaTable({
                     <button
                       type="button"
                       onClick={() => onEdit(c)}
-                      className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-line/60 hover:text-ink"
+                      className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                       aria-label={`Editar ${c.nombre}`}
                     >
                       <Pencil size={16} />
@@ -111,7 +113,7 @@ export function CategoriaTable({
                     <button
                       type="button"
                       onClick={() => onDelete(c)}
-                      className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-danger/10 hover:text-danger"
+                      className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-danger/10 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
                       aria-label={`Eliminar ${c.nombre}`}
                     >
                       <Trash2 size={16} />
@@ -123,36 +125,15 @@ export function CategoriaTable({
           )}
         </tbody>
       </table>
+      </div>
 
-      {/* Paginación (solo si hay más de una página y no está cargando) */}
-      {!loading && categorias.length > PAGE_SIZE ? (
-        <div className="flex items-center justify-between border-t border-line px-5 py-3 text-sm">
-          <span className="text-ink-faint">
-            {start + 1}–{Math.min(start + PAGE_SIZE, categorias.length)} de{" "}
-            {categorias.length}
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={safePage === 1}
-              className="rounded-lg px-3 py-1.5 text-ink-soft transition-colors hover:bg-line/60 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Anterior
-            </button>
-            <span className="px-2 text-ink-faint">
-              {safePage} / {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={safePage === totalPages}
-              className="rounded-lg px-3 py-1.5 text-ink-soft transition-colors hover:bg-line/60 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Siguiente
-            </button>
-          </div>
-        </div>
+      {!loading ? (
+        <Pagination
+          page={safePage}
+          total={categorias.length}
+          pageSize={PAGE_SIZE}
+          onChange={setPage}
+        />
       ) : null}
     </div>
   );

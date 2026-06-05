@@ -54,7 +54,7 @@ export function ReposicionTable({ items, loading }: ReposicionTableProps) {
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead>
+          <thead className="bg-paper/50">
             <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
               <th className="px-5 py-3 font-medium">Código</th>
               <th className="px-5 py-3 font-medium">Producto</th>
@@ -75,10 +75,15 @@ export function ReposicionTable({ items, loading }: ReposicionTableProps) {
                 </td>
                 <td className="px-5 py-4 font-medium text-ink">{p.nombre}</td>
                 <td className="px-5 py-4 text-ink-soft">{p.proveedor}</td>
-                <td className="px-5 py-4 text-right font-medium text-ink">
+                <td
+                  className={[
+                    "px-5 py-4 text-right font-semibold tabular-nums",
+                    p.stock === 0 ? "text-danger" : "text-amber-600",
+                  ].join(" ")}
+                >
                   {p.stock}
                 </td>
-                <td className="px-5 py-4 text-right text-ink-soft">
+                <td className="px-5 py-4 text-right tabular-nums text-ink-soft">
                   {p.stock_minimo}
                 </td>
                 <td className="px-5 py-4">

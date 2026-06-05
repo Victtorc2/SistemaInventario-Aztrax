@@ -41,10 +41,10 @@ export function MetodoPagoSelector({ value, onChange }: MetodoPagoSelectorProps)
               className={[
                 "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5",
                 "text-sm font-medium transition-all duration-200",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/20",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
                 active
                   ? "border-accent bg-accent text-white shadow-sm"
-                  : "border-line bg-white text-ink-soft hover:border-ink/40 hover:bg-paper/60",
+                  : "border-line bg-white text-ink-soft hover:border-accent/40 hover:bg-paper/60",
               ].join(" ")}
             >
               <Icon size={17} />

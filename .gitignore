@@ -5,3 +5,11 @@ dist-ssr
 .env.example
 *.local
 .DS_Store
+
+# Build cache
+*.tsbuildinfo
+
+# Local tooling (Claude Code / skills) — no es parte de la app
+.claude/
+.agents/
+skills-lock.json

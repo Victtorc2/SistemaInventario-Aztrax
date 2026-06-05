@@ -2,9 +2,12 @@
  * DashboardStats: tarjetas de indicadores rápidos (KPIs).
  *
  * Muestra ventas del día, monto del día, ticket promedio, valor de inventario
- * y alertas de stock. Diseño minimalista coherente con el resto del sistema.
+ * y alertas de stock. Las tarjetas que tienen una pantalla asociada son
+ * clicables (navegan a ella); las de alerta destacan visualmente cuando hay un
+ * problema que atender. Diseño coherente con el resto del sistema.
  */
 
+import { Link } from "react-router-dom";
 import {
   ShoppingCart,
   Wallet,
@@ -12,6 +15,7 @@ import {
   Boxes,
   AlertTriangle,
   PackageX,
+  ArrowUpRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { formatMoney } from "@/utils/format";
@@ -21,20 +25,32 @@ interface DashboardStatsProps {
   resumen: ResumenDashboard;
 }
 
+type Tone = "indigo" | "sky" | "emerald" | "violet" | "warning" | "danger";
+
+interface StatCardData {
+  label: string;
+  value: string;
+  hint?: string;
+  icon: LucideIcon;
+  tone?: Tone;
+  /** Si se define, la tarjeta navega a esta ruta al hacer clic. */
+  to?: string;
+  /** Resalta la tarjeta como alerta accionable (borde de color + énfasis). */
+  alert?: boolean;
+}
+
 export function DashboardStats({ resumen }: DashboardStatsProps) {
-  const cards: {
-    label: string;
-    value: string;
-    hint?: string;
-    icon: LucideIcon;
-    tone?: "indigo" | "sky" | "emerald" | "violet" | "warning" | "danger";
-  }[] = [
+  const bajoStock = resumen.productos_bajo_stock;
+  const agotados = resumen.productos_agotados;
+
+  const cards: StatCardData[] = [
     {
       label: "Ventas de hoy",
       value: String(resumen.ventas_hoy),
       hint: `${formatMoney(resumen.monto_hoy)} facturado hoy`,
       icon: ShoppingCart,
       tone: "indigo",
+      to: "/historial",
     },
     {
       label: "Monto total",
@@ -42,6 +58,7 @@ export function DashboardStats({ resumen }: DashboardStatsProps) {
       hint: `${resumen.ventas_total} ventas en total`,
       icon: Wallet,
       tone: "emerald",
+      to: "/historial",
     },
     {
       label: "Ticket promedio",
@@ -56,20 +73,25 @@ export function DashboardStats({ resumen }: DashboardStatsProps) {
       hint: `${resumen.productos_activos} productos activos`,
       icon: Boxes,
       tone: "violet",
+      to: "/productos",
     },
     {
       label: "Bajo stock",
-      value: String(resumen.productos_bajo_stock),
-      hint: "Productos por reponer",
+      value: String(bajoStock),
+      hint: bajoStock > 0 ? "Revisar productos por reponer" : "Todo en orden",
       icon: AlertTriangle,
-      tone: resumen.productos_bajo_stock > 0 ? "warning" : "indigo",
+      tone: bajoStock > 0 ? "warning" : "indigo",
+      to: "/productos-por-pedir",
+      alert: bajoStock > 0,
     },
     {
       label: "Agotados",
-      value: String(resumen.productos_agotados),
-      hint: "Sin stock disponible",
+      value: String(agotados),
+      hint: agotados > 0 ? "Sin stock disponible" : "Sin productos agotados",
       icon: PackageX,
-      tone: resumen.productos_agotados > 0 ? "danger" : "emerald",
+      tone: agotados > 0 ? "danger" : "emerald",
+      to: "/productos-por-pedir",
+      alert: agotados > 0,
     },
   ];
 
@@ -82,7 +104,7 @@ export function DashboardStats({ resumen }: DashboardStatsProps) {
   );
 }
 
-const TONES: Record<string, string> = {
+const TONES: Record<Tone, string> = {
   indigo: "bg-accent-soft text-accent",
   sky: "bg-sky-50 text-sky-500",
   emerald: "bg-emerald-50 text-emerald-600",
@@ -91,33 +113,65 @@ const TONES: Record<string, string> = {
   danger: "bg-rose-50 text-danger",
 };
 
+/** Anillo/borde de énfasis para tarjetas de alerta activas. */
+const ALERT_RING: Partial<Record<Tone, string>> = {
+  warning: "border-amber-300/70 ring-1 ring-amber-200/60",
+  danger: "border-danger/40 ring-1 ring-danger/15",
+};
+
 function StatCard({
   label,
   value,
   hint,
   icon: Icon,
   tone = "indigo",
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  icon: LucideIcon;
-  tone?: "indigo" | "sky" | "emerald" | "violet" | "warning" | "danger";
-}) {
+  to,
+  alert = false,
+}: StatCardData) {
   const iconWrap = TONES[tone] ?? TONES.indigo;
+  const ring = alert ? ALERT_RING[tone] ?? "" : "";
 
-  return (
-    <div className="rounded-2xl border border-line bg-white p-5 shadow-card transition-all duration-200 hover:shadow-md">
-      <div
-        className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg ${iconWrap}`}
-      >
-        <Icon size={18} />
+  const base = [
+    "group relative block rounded-2xl border bg-white p-5 shadow-card",
+    "transition-all duration-200",
+    ring || "border-line",
+    to ? "hover:-translate-y-0.5 hover:shadow-md" : "hover:shadow-md",
+    to
+      ? "focus:outline-none focus-visible:shadow-focus focus-visible:ring-2 focus-visible:ring-accent/30"
+      : "",
+  ].join(" ");
+
+  const inner = (
+    <>
+      <div className="mb-3 flex items-center justify-between">
+        <div
+          className={`flex h-9 w-9 items-center justify-center rounded-lg ${iconWrap}`}
+        >
+          <Icon size={18} />
+        </div>
+        {to ? (
+          <ArrowUpRight
+            size={16}
+            className="text-ink-faint opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+            aria-hidden="true"
+          />
+        ) : null}
       </div>
       <p className="text-sm text-ink-faint">{label}</p>
       <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
         {value}
       </p>
       {hint ? <p className="mt-1 text-xs text-ink-faint">{hint}</p> : null}
-    </div>
+    </>
   );
+
+  if (to) {
+    return (
+      <Link to={to} className={base} aria-label={`${label}: ${value}. Ver detalle`}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return <div className={base}>{inner}</div>;
 }

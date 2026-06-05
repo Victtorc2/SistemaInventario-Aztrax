@@ -57,7 +57,7 @@ export function ProductoVentaTable({
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead>
+          <thead className="bg-paper/50">
             <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
               <th className="hidden px-4 py-3 font-medium md:table-cell">Código</th>
               <th className="px-4 py-3 font-medium">Producto</th>
@@ -87,10 +87,10 @@ export function ProductoVentaTable({
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 text-ink-soft md:table-cell">{p.marca}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right text-ink-soft">
+                  <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-ink-soft">
                     {formatMoney(p.precio_venta)}
                   </td>
-                  <td className="hidden px-4 py-3 text-right font-medium text-ink sm:table-cell">
+                  <td className="hidden px-4 py-3 text-right font-medium tabular-nums text-ink sm:table-cell">
                     {p.stock}
                   </td>
                   <td className="hidden px-4 py-3 lg:table-cell">
@@ -101,7 +101,7 @@ export function ProductoVentaTable({
                       type="button"
                       onClick={() => onAdd(p)}
                       disabled={agotado}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-600 disabled:cursor-not-allowed disabled:bg-line disabled:text-ink-faint"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all duration-200 hover:bg-indigo-600 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:bg-line disabled:text-ink-faint disabled:active:scale-100"
                       aria-label={`Agregar ${p.nombre}`}
                     >
                       <Plus size={14} />

@@ -14,6 +14,7 @@ import { MetodoPagoSelector } from "@/components/ventas/MetodoPagoSelector";
 import { TipoPagoSelector } from "@/components/ventas/TipoPagoSelector";
 import { ResumenVenta } from "@/components/ventas/ResumenVenta";
 import { Button } from "@/components/ui/Button";
+import { formatMoney } from "@/utils/format";
 import type {
   CartItem,
   CartTotals,
@@ -148,9 +149,11 @@ export function TotalCard({
                 fullWidth
                 onClick={onConfirm}
                 loading={submitting}
-                disabled={Boolean(discountError)}
+                disabled={Boolean(discountError) || Boolean(clienteError)}
               >
-                Confirmar venta
+                {submitting
+                  ? "Confirmar venta"
+                  : `Confirmar · ${formatMoney(totals.total)}`}
               </Button>
             </div>
           </div>

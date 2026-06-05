@@ -12,7 +12,6 @@
 import type { ReactNode } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { Loader } from "@/components/ui/Loader";
 
 interface ConfirmModalProps {
   open: boolean;
@@ -40,24 +39,6 @@ export function ConfirmModal({
   onConfirm,
   onClose,
 }: ConfirmModalProps) {
-  // Botón principal: danger usa un estilo distinto al Button por defecto.
-  const confirmBtn =
-    tone === "danger" ? (
-      <button
-        type="button"
-        onClick={onConfirm}
-        disabled={loading}
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-danger px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {loading ? <Loader size={16} /> : null}
-        {confirmLabel}
-      </button>
-    ) : (
-      <Button onClick={onConfirm} loading={loading}>
-        {confirmLabel}
-      </Button>
-    );
-
   return (
     <Modal open={open} title={title} onClose={onClose} closeOnOverlay={!loading}>
       <div className="text-sm text-ink-soft">{message}</div>
@@ -66,7 +47,13 @@ export function ConfirmModal({
         <Button variant="ghost" onClick={onClose} disabled={loading}>
           {cancelLabel}
         </Button>
-        {confirmBtn}
+        <Button
+          variant={tone === "danger" ? "danger" : "primary"}
+          onClick={onConfirm}
+          loading={loading}
+        >
+          {confirmLabel}
+        </Button>
       </div>
     </Modal>
   );

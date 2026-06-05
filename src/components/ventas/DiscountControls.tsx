@@ -34,7 +34,7 @@ export function DiscountControls({
         <select
           value={tipo}
           onChange={(e) => onTipoChange(e.target.value as DescuentoTipo)}
-          className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-soft transition-all focus:border-ink focus:shadow-focus focus:outline-none"
+          className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-soft transition-all focus:border-accent focus:shadow-focus focus:outline-none"
           aria-label="Tipo de descuento"
         >
           <option value="ninguno">Sin descuento</option>
@@ -58,7 +58,7 @@ export function DiscountControls({
               className={[
                 "w-full rounded-lg border bg-white py-2 pl-9 pr-2 text-sm text-ink",
                 "transition-all focus:shadow-focus focus:outline-none",
-                error ? "border-danger" : "border-line focus:border-ink",
+                error ? "border-danger" : "border-line focus:border-accent",
               ].join(" ")}
               aria-label="Valor del descuento"
             />

@@ -31,7 +31,7 @@ const ESTADOS: { value: EstadoProducto; label: string }[] = [
 ];
 
 const selectCls =
-  "rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-soft transition-all focus:border-ink focus:shadow-focus focus:outline-none";
+  "rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-soft transition-all focus:border-accent focus:shadow-focus focus:outline-none";
 
 export function ProductoFilters({
   value,

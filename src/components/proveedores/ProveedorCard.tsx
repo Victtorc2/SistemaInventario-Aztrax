@@ -23,7 +23,7 @@ export function ProveedorCard({ proveedor, onEdit, onDelete }: ProveedorCardProp
           <button
             type="button"
             onClick={() => onEdit(proveedor)}
-            className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-line/60 hover:text-ink"
+            className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
             aria-label={`Editar ${proveedor.nombre}`}
           >
             <Pencil size={16} />
@@ -31,7 +31,7 @@ export function ProveedorCard({ proveedor, onEdit, onDelete }: ProveedorCardProp
           <button
             type="button"
             onClick={() => onDelete(proveedor)}
-            className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-danger/10 hover:text-danger"
+            className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-danger/10 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
             aria-label={`Eliminar ${proveedor.nombre}`}
           >
             <Trash2 size={16} />

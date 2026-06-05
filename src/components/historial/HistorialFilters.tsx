@@ -21,7 +21,7 @@ interface HistorialFiltersProps {
 }
 
 const inputCls =
-  "rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-soft transition-all focus:border-ink focus:shadow-focus focus:outline-none";
+  "rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-soft transition-all focus:border-accent focus:shadow-focus focus:outline-none";
 
 export function HistorialFilters({ value, onChange }: HistorialFiltersProps) {
   const hasFilter =

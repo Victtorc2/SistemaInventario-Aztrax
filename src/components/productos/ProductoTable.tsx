@@ -41,7 +41,7 @@ export function ProductoTable({
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[920px] text-left text-sm">
-            <thead>
+            <thead className="bg-paper/50">
               <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
                 <th className="px-4 py-3 font-medium">Código</th>
                 <th className="px-4 py-3 font-medium">Nombre</th>
@@ -85,13 +85,13 @@ export function ProductoTable({
                       <td className="px-4 py-4 text-ink-soft">{p.marca}</td>
                       <td className="px-4 py-4 text-ink-soft">{p.categoria}</td>
                       <td className="px-4 py-4 text-ink-soft">{p.proveedor}</td>
-                      <td className="px-4 py-4 text-right text-ink-soft">
+                      <td className="px-4 py-4 text-right tabular-nums text-ink-soft">
                         {formatMoney(p.precio_compra)}
                       </td>
-                      <td className="px-4 py-4 text-right text-ink-soft">
+                      <td className="px-4 py-4 text-right tabular-nums text-ink-soft">
                         {formatMoney(p.precio_venta)}
                       </td>
-                      <td className="px-4 py-4 text-right font-medium text-ink">
+                      <td className="px-4 py-4 text-right font-medium tabular-nums text-ink">
                         {p.stock}
                       </td>
                       <td className="px-4 py-4">
@@ -102,7 +102,7 @@ export function ProductoTable({
                           <button
                             type="button"
                             onClick={() => onEdit(p)}
-                            className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-line/60 hover:text-ink"
+                            className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-line/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                             aria-label={`Editar ${p.nombre}`}
                           >
                             <Pencil size={16} />
@@ -110,7 +110,7 @@ export function ProductoTable({
                           <button
                             type="button"
                             onClick={() => onDelete(p)}
-                            className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-danger/10 hover:text-danger"
+                            className="rounded-lg p-2 text-ink-faint transition-all duration-200 hover:bg-danger/10 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
                             aria-label={`Eliminar ${p.nombre}`}
                           >
                             <Trash2 size={16} />

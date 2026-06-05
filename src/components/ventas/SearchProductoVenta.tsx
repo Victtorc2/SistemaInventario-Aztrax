@@ -29,7 +29,7 @@ export function SearchProductoVenta({
         onChange={(e) => onChange(e.target.value)}
         placeholder="Buscar producto..."
         autoFocus
-        className="w-full rounded-xl border border-line bg-white py-3 pl-11 pr-4 text-sm text-ink placeholder:text-ink-faint/70 transition-all focus:border-ink focus:shadow-focus focus:outline-none"
+        className="w-full rounded-xl border border-line bg-white py-3 pl-11 pr-4 text-sm text-ink placeholder:text-ink-faint/70 transition-all focus:border-accent focus:shadow-focus focus:outline-none"
       />
     </div>
   );

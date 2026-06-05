@@ -48,7 +48,7 @@ export function ClienteTable({
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[680px] text-left text-sm">
-          <thead>
+          <thead className="bg-paper/50">
             <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
               <th className="px-5 py-3 font-medium">Cliente</th>
               <th className="px-5 py-3 font-medium">Documento</th>
@@ -75,7 +75,7 @@ export function ClienteTable({
                   <td className="px-5 py-4 text-ink-soft">{c.telefono ?? "—"}</td>
                   <td className="px-5 py-4 text-right">
                     {deuda > 0 ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-danger">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium tabular-nums text-danger">
                         {formatMoney(deuda)}
                       </span>
                     ) : (
