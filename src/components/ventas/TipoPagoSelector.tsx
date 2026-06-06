@@ -109,33 +109,84 @@ export function TipoPagoSelector({
         </div>
       ) : null}
 
-      {/* Datos rápidos del cliente (solo en contado, opcional) */}
+      {/* Cliente en contado: elegir uno registrado O crear uno nuevo (opcional) */}
       {value === "contado" ? (
         <div className="mt-1 rounded-xl border border-line bg-paper/40 p-3">
           <p className="mb-2 text-xs font-medium text-ink-soft">
-            Datos del cliente <span className="text-ink-faint">(opcional)</span>
+            Cliente <span className="text-ink-faint">(opcional)</span>
           </p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <input
-              type="text"
-              value={clienteNombre}
-              onChange={(e) => onNombreChange(e.target.value)}
-              placeholder="Nombre del cliente"
-              className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-            />
-            <input
-              type="text"
-              inputMode="numeric"
-              value={clienteDocumento}
-              onChange={(e) => onDocumentoChange(e.target.value)}
-              placeholder="DNI / RUC"
-              className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-            />
-          </div>
-          <p className="mt-1.5 text-xs text-ink-faint">
-            Si lo registras, el cliente se guarda y podrás completar sus datos
-            en el módulo de Clientes.
-          </p>
+
+          {/* 1) Seleccionar un cliente ya registrado */}
+          <select
+            value={clienteId ?? ""}
+            onChange={(e) => {
+              const id = e.target.value ? Number(e.target.value) : null;
+              onClienteChange(id);
+              // Al elegir un registrado, limpiamos los datos rápidos.
+              if (id) {
+                onNombreChange("");
+                onDocumentoChange("");
+              }
+            }}
+            disabled={clientesLoading}
+            aria-label="Cliente registrado"
+            className={[
+              "w-full rounded-lg border bg-white px-3 py-2 text-sm transition-all",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+              "border-line",
+              clienteId ? "text-ink" : "text-ink-faint",
+            ].join(" ")}
+          >
+            <option value="">
+              {clientesLoading
+                ? "Cargando clientes…"
+                : "Cliente registrado…"}
+            </option>
+            {clientes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+                {c.documento ? ` · ${c.documento}` : ""}
+              </option>
+            ))}
+          </select>
+
+          {/* 2) O registrar uno nuevo (se oculta si ya se eligió uno registrado) */}
+          {clienteId == null ? (
+            <>
+              <p className="my-2 text-center text-[11px] uppercase tracking-wide text-ink-faint">
+                o registra uno nuevo
+              </p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <input
+                  type="text"
+                  value={clienteNombre}
+                  onChange={(e) => onNombreChange(e.target.value)}
+                  placeholder="Nombre del cliente"
+                  className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={clienteDocumento}
+                  onChange={(e) => onDocumentoChange(e.target.value)}
+                  placeholder="DNI / RUC"
+                  className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                />
+              </div>
+              <p className="mt-1.5 text-xs text-ink-faint">
+                Si lo registras, el cliente se guarda y podrás completar sus
+                datos en el módulo de Clientes.
+              </p>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onClienteChange(null)}
+              className="mt-2 text-xs font-medium text-accent hover:underline"
+            >
+              Quitar cliente seleccionado
+            </button>
+          )}
         </div>
       ) : null}
     </div>

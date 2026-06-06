@@ -39,6 +39,7 @@ export function CarritoTable({
             </p>
             <p className="text-xs text-ink-faint">
               {formatMoney(precioVenta(item))} c/u · {item.producto.marca}
+              {item.producto.modelo ? ` / ${item.producto.modelo}` : ""}
             </p>
           </div>
 

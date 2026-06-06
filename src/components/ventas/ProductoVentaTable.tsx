@@ -62,6 +62,7 @@ export function ProductoVentaTable({
               <th className="hidden px-4 py-3 font-medium md:table-cell">Código</th>
               <th className="px-4 py-3 font-medium">Producto</th>
               <th className="hidden px-4 py-3 font-medium md:table-cell">Marca</th>
+              <th className="hidden px-4 py-3 font-medium lg:table-cell">Modelo</th>
               <th className="px-4 py-3 text-right font-medium">Precio</th>
               <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Stock</th>
               <th className="hidden px-4 py-3 font-medium lg:table-cell">Estado</th>
@@ -81,12 +82,16 @@ export function ProductoVentaTable({
                   </td>
                   <td className="px-4 py-3 font-medium text-ink">
                     {p.nombre}
-                    {/* En móvil, marca y stock van como subtexto (esas columnas se ocultan). */}
+                    {/* En móvil, marca, modelo y stock van como subtexto (esas columnas se ocultan). */}
                     <span className="mt-0.5 block text-xs font-normal text-ink-faint md:hidden">
-                      {p.marca} · Stock: {p.stock}
+                      {p.marca}
+                      {p.modelo ? ` / ${p.modelo}` : ""} · Stock: {p.stock}
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 text-ink-soft md:table-cell">{p.marca}</td>
+                  <td className="hidden px-4 py-3 text-ink-soft lg:table-cell">
+                    {p.modelo || "—"}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-ink-soft">
                     {formatMoney(p.precio_venta)}
                   </td>

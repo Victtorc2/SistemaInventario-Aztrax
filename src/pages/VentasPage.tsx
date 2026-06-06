@@ -147,10 +147,9 @@ export function VentasPage() {
       setConfirmOpen(false);
       // Refrescamos resultados para reflejar el stock descontado.
       await loadProductos(debouncedSearch);
-      // Recargamos clientes para reflejar la nueva deuda si fue a crédito.
-      if (credito) {
-        clienteService.getClientes().then(setClientes).catch(() => {});
-      }
+      // Recargamos clientes: refleja la nueva deuda (crédito) y hace que un
+      // cliente recién creado en una venta al contado aparezca en el selector.
+      clienteService.getClientes().then(setClientes).catch(() => {});
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo registrar la venta");
     } finally {

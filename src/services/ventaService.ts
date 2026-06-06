@@ -42,6 +42,10 @@ export function buildVentaPayload(
   const esContado = pago.tipoPago !== "credito";
   const nombre = (pago.clienteNombre ?? "").trim();
   const documento = (pago.clienteDocumento ?? "").trim();
+  // Si se eligió un cliente ya registrado (en contado o crédito), se envía su
+  // id. Los datos rápidos (nombre/documento) solo aplican en contado cuando NO
+  // hay un cliente registrado seleccionado.
+  const usaClienteRegistrado = pago.clienteId != null;
   return {
     items: items.map((it) => ({
       producto_id: it.producto.id,
@@ -52,10 +56,11 @@ export function buildVentaPayload(
       descuento.tipo === "ninguno" ? null : MAP_TIPO[descuento.tipo],
     metodo_pago: pago.metodoPago,
     tipo_pago: pago.tipoPago,
-    cliente_id: pago.tipoPago === "credito" ? pago.clienteId : null,
-    // En contado, enviamos los datos rápidos si se ingresaron.
-    cliente_nombre: esContado && nombre ? nombre : null,
-    cliente_documento: esContado && documento ? documento : null,
+    cliente_id: pago.clienteId,
+    cliente_nombre:
+      esContado && !usaClienteRegistrado && nombre ? nombre : null,
+    cliente_documento:
+      esContado && !usaClienteRegistrado && documento ? documento : null,
   };
 }
 
