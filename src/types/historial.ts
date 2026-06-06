@@ -49,9 +49,9 @@ export interface DatosNegocio {
 }
 
 export const DATOS_NEGOCIO: DatosNegocio = {
-  nombre: "Mi Tienda SAC",
-  ruc: "20456789123",
-  direccion: "Av. Perú 123",
+  nombre: "Fishing and More",
+  ruc: "10769540089",
+  direccion: "Av. Los Incas 110",
   ciudad: "Ica - Perú",
-  telefono: "999 999 999",
+  telefono: "991180718",
 };

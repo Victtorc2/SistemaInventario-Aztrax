@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { Plus, RefreshCw } from "lucide-react";
+import { FileText, Plus, RefreshCw } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/Button";
 import { SearchProducto } from "@/components/productos/SearchProducto";
@@ -52,6 +52,7 @@ export function ProductosPage() {
   const [editing, setEditing] = useState<Producto | null>(null);
   const [deleting, setDeleting] = useState<Producto | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
 
   const load = useCallback(
     async (term: string, f: ProductoFilterState) => {
@@ -126,6 +127,24 @@ export function ProductosPage() {
     }
   };
 
+  // Genera y descarga el reporte PDF con los MISMOS filtros activos del listado.
+  const handleReporte = async () => {
+    setReportLoading(true);
+    try {
+      await productoService.downloadReporteProductos({
+        search: debouncedSearch || undefined,
+        categoria: filters.categoria ? Number(filters.categoria) : undefined,
+        proveedor: filters.proveedor ? Number(filters.proveedor) : undefined,
+        estado: (filters.estado || undefined) as EstadoProducto | undefined,
+      });
+      toast.success("Reporte generado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo generar el reporte");
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   const isEmpty = !loading && productos.length === 0;
 
   return (
@@ -135,6 +154,16 @@ export function ProductosPage() {
       actions={
         <>
           <SearchProducto value={search} onChange={setSearch} />
+          <Button
+            variant="secondary"
+            onClick={handleReporte}
+            loading={reportLoading}
+            disabled={loading}
+            title="Descargar reporte PDF del inventario (respeta los filtros)"
+          >
+            <FileText size={16} />
+            Reporte PDF
+          </Button>
           <Button onClick={openCreate}>
             <Plus size={16} />
             Nuevo producto
