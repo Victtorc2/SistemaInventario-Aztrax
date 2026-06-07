@@ -9,24 +9,49 @@
 import { axiosClient } from "@/api/axiosClient";
 import { resolveAxiosError } from "@/utils/errorHandler";
 import type {
+  PaginatedProductos,
   Producto,
   ProductoFilters,
   ProductoPayload,
 } from "@/types/producto";
 
-/** Lista productos aplicando filtros opcionales (search, categoria, etc.). */
+/**
+ * Lista productos aplicando filtros opcionales (search, categoria, etc.).
+ *
+ * El backend ahora devuelve la respuesta PAGINADA ({ items, total, ... }) con
+ * un máximo de 100 por página. Para mantener el contrato `Producto[]` que
+ * esperan las pantallas (inventario y ventas muestran todo el listado),
+ * recorremos todas las páginas y concatenamos los items. También se acepta
+ * el formato antiguo (array directo) por compatibilidad.
+ */
 export async function getProductos(
   filters: ProductoFilters = {},
 ): Promise<Producto[]> {
   // Construimos params solo con los filtros definidos.
-  const params: Record<string, string | number> = {};
+  const params: Record<string, string | number> = { page_size: 100 };
   if (filters.search?.trim()) params.search = filters.search.trim();
   if (filters.categoria) params.categoria = filters.categoria;
   if (filters.proveedor) params.proveedor = filters.proveedor;
   if (filters.estado) params.estado = filters.estado;
 
-  const { data } = await axiosClient.get<Producto[]>("/productos", { params });
-  return data;
+  const { data } = await axiosClient.get<PaginatedProductos | Producto[]>(
+    "/productos",
+    { params: { ...params, page: 1 } },
+  );
+
+  // Compatibilidad: si el backend devolviera un array (formato antiguo).
+  if (Array.isArray(data)) return data;
+
+  let items = data.items;
+  // Si hay más de una página, traemos el resto y concatenamos.
+  for (let page = 2; page <= data.total_pages; page++) {
+    const { data: next } = await axiosClient.get<PaginatedProductos>(
+      "/productos",
+      { params: { ...params, page } },
+    );
+    items = items.concat(next.items);
+  }
+  return items;
 }
 
 /** Búsqueda dedicada por nombre o código (endpoint /productos/buscar). */

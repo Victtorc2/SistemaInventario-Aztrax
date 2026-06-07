@@ -2,7 +2,7 @@
  * Tipos del módulo de productos.
  *
  * Reflejan el contrato del backend FastAPI:
- *   GET    /productos               -> Producto[]   (filtros por query)
+ *   GET    /productos               -> { items, total, page, page_size, total_pages }  (paginado)
  *   GET    /productos/buscar?q=      -> Producto[]
  *   POST   /productos               -> Producto
  *   PUT    /productos/{id}           -> Producto
@@ -49,6 +49,15 @@ export interface ProductoPayload {
   precio_venta: number;
   stock: number;
   stock_minimo: number;
+}
+
+/** Respuesta paginada del backend para GET /productos. */
+export interface PaginatedProductos {
+  items: Producto[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 /** Filtros disponibles para el listado de productos. */
