@@ -5,10 +5,6 @@
  *   - loading: muestra filas "skeleton".
  *   - vacío: mensaje "No hay categorías registradas".
  *   - con datos: filas con acciones (editar/eliminar) y paginación de 10.
- *
- * Nota: la columna "Cantidad productos" se muestra como "—" porque el endpoint
- * actual de categorías del backend no devuelve ese conteo. Cuando el backend
- * lo exponga (p. ej. `productos_count`), basta con leerlo aquí.
  */
 
 import { useState } from "react";
@@ -58,7 +54,6 @@ export function CategoriaTable({
         <thead className="bg-paper/50">
           <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
             <th className="px-5 py-3 font-medium">Nombre</th>
-            <th className="px-5 py-3 font-medium">Productos</th>
             <th className="px-5 py-3 font-medium">Fecha creación</th>
             <th className="px-5 py-3 text-right font-medium">Acciones</th>
           </tr>
@@ -68,7 +63,7 @@ export function CategoriaTable({
             // Skeleton de carga.
             Array.from({ length: 5 }).map((_, i) => (
               <tr key={i} className="border-b border-line/60 last:border-0">
-                {Array.from({ length: 4 }).map((__, j) => (
+                {Array.from({ length: 3 }).map((__, j) => (
                   <td key={j} className="px-5 py-4">
                     <div className="h-3.5 w-24 animate-pulse rounded bg-line" />
                   </td>
@@ -78,7 +73,7 @@ export function CategoriaTable({
           ) : visible.length === 0 ? (
             // Estado vacío.
             <tr>
-              <td colSpan={4} className="px-5 py-16">
+              <td colSpan={3} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-line/60 text-ink-faint">
                     <Tags size={20} />
@@ -99,7 +94,6 @@ export function CategoriaTable({
                 className="border-b border-line/60 transition-colors last:border-0 hover:bg-paper/60"
               >
                 <td className="px-5 py-4 font-medium text-ink">{c.nombre}</td>
-                <td className="px-5 py-4 text-ink-faint">—</td>
                 <td className="px-5 py-4 text-ink-soft">{formatDate(c.created_at)}</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center justify-end gap-1">

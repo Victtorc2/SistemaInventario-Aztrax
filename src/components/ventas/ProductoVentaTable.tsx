@@ -6,10 +6,14 @@
  * (skeleton) y estado sin resultados.
  */
 
+import { useState } from "react";
 import { Plus, PackageSearch } from "lucide-react";
 import { StockBadge } from "@/components/productos/StockBadge";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatMoney } from "@/utils/format";
 import type { Producto } from "@/types/producto";
+
+const PAGE_SIZE = 10;
 
 interface ProductoVentaTableProps {
   productos: Producto[];
@@ -22,6 +26,8 @@ export function ProductoVentaTable({
   loading,
   onAdd,
 }: ProductoVentaTableProps) {
+  const [page, setPage] = useState(1);
+
   if (loading) {
     return (
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
@@ -53,24 +59,30 @@ export function ProductoVentaTable({
     );
   }
 
+  const totalPages = Math.max(1, Math.ceil(productos.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const visible = productos.slice(start, start + PAGE_SIZE);
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-paper/50">
-            <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
-              <th className="hidden px-4 py-3 font-medium md:table-cell">Código</th>
-              <th className="px-4 py-3 font-medium">Producto</th>
-              <th className="hidden px-4 py-3 font-medium md:table-cell">Marca</th>
-              <th className="hidden px-4 py-3 font-medium lg:table-cell">Modelo</th>
-              <th className="px-4 py-3 text-right font-medium">Precio</th>
-              <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Stock</th>
-              <th className="hidden px-4 py-3 font-medium lg:table-cell">Estado</th>
-              <th className="px-4 py-3 text-right font-medium">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productos.map((p) => {
+    <div>
+      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-paper/50">
+              <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
+                <th className="hidden px-4 py-3 font-medium md:table-cell">Código</th>
+                <th className="px-4 py-3 font-medium">Producto</th>
+                <th className="hidden px-4 py-3 font-medium md:table-cell">Marca</th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">Modelo</th>
+                <th className="px-4 py-3 text-right font-medium">Precio</th>
+                <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Stock</th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">Estado</th>
+                <th className="px-4 py-3 text-right font-medium">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((p) => {
               const agotado = p.stock <= 0;
               return (
                 <tr
@@ -116,9 +128,17 @@ export function ProductoVentaTable({
                 </tr>
               );
             })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      <Pagination
+        page={safePage}
+        total={productos.length}
+        pageSize={PAGE_SIZE}
+        onChange={setPage}
+      />
     </div>
   );
 }

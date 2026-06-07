@@ -5,13 +5,17 @@
  * editar, eliminar). La deuda se resalta en rojo cuando es > 0.
  */
 
+import { useState } from "react";
 import { Wallet, Pencil, Trash2 } from "lucide-react";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ActionIcon } from "@/components/ui/ActionIcon";
+import { Pagination } from "@/components/ui/Pagination";
 import { Users } from "lucide-react";
 import { formatMoney } from "@/utils/format";
 import type { Cliente } from "@/types/cliente";
+
+const PAGE_SIZE = 10;
 
 interface ClienteTableProps {
   clientes: Cliente[];
@@ -33,6 +37,8 @@ export function ClienteTable({
   onEdit,
   onDelete,
 }: ClienteTableProps) {
+  const [page, setPage] = useState(1);
+
   if (loading) return <TableSkeleton rows={6} columns={5} />;
 
   if (clientes.length === 0) {
@@ -45,21 +51,27 @@ export function ClienteTable({
     );
   }
 
+  const totalPages = Math.max(1, Math.ceil(clientes.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const visible = clientes.slice(start, start + PAGE_SIZE);
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px] text-left text-sm">
-          <thead className="bg-paper/50">
-            <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
-              <th className="px-5 py-3 font-medium">Cliente</th>
-              <th className="px-5 py-3 font-medium">Documento</th>
-              <th className="px-5 py-3 font-medium">Teléfono</th>
-              <th className="px-5 py-3 text-right font-medium">Deuda</th>
-              <th className="px-5 py-3 text-right font-medium">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clientes.map((c) => {
+    <div>
+      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-left text-sm">
+            <thead className="bg-paper/50">
+              <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
+                <th className="px-5 py-3 font-medium">Cliente</th>
+                <th className="px-5 py-3 font-medium">Documento</th>
+                <th className="px-5 py-3 font-medium">Teléfono</th>
+                <th className="px-5 py-3 text-right font-medium">Deuda</th>
+                <th className="px-5 py-3 text-right font-medium">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((c) => {
               const deuda = toNum(c.deuda_total);
               return (
                 <tr
@@ -111,9 +123,17 @@ export function ClienteTable({
                 </tr>
               );
             })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      <Pagination
+        page={safePage}
+        total={clientes.length}
+        pageSize={PAGE_SIZE}
+        onChange={setPage}
+      />
     </div>
   );
 }
