@@ -17,6 +17,35 @@
 /** Estado de stock calculado por el backend. */
 export type EstadoProducto = "disponible" | "bajo_stock" | "agotado";
 
+/**
+ * Representación / presentación de venta del producto (lista cerrada que
+ * coincide con el enum del backend). Es opcional: por defecto "unidad".
+ */
+export type Representacion =
+  | "unidad"
+  | "sobre"
+  | "caja"
+  | "paquete"
+  | "blister"
+  | "docena"
+  | "par"
+  | "kit";
+
+/** Opciones de representación con su etiqueta legible (para selects). */
+export const REPRESENTACIONES: { value: Representacion; label: string }[] = [
+  { value: "unidad", label: "Unidad" },
+  { value: "sobre", label: "Sobre" },
+  { value: "caja", label: "Caja" },
+  { value: "paquete", label: "Paquete" },
+  { value: "blister", label: "Blíster" },
+  { value: "docena", label: "Docena" },
+  { value: "par", label: "Par" },
+  { value: "kit", label: "Kit" },
+];
+
+/** Criterio de orden del listado de productos. */
+export type OrdenProducto = "reciente" | "nombre";
+
 /** Producto tal como lo devuelve el backend. */
 export interface Producto {
   id: number;
@@ -31,6 +60,8 @@ export interface Producto {
   stock: number;
   stock_minimo: number;
   estado: EstadoProducto;
+  representacion: Representacion;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -49,6 +80,7 @@ export interface ProductoPayload {
   precio_venta: number;
   stock: number;
   stock_minimo: number;
+  representacion: Representacion;
 }
 
 /** Respuesta paginada del backend para GET /productos. */
@@ -66,4 +98,8 @@ export interface ProductoFilters {
   categoria?: number;
   proveedor?: number;
   estado?: EstadoProducto;
+  /** true = activos (por defecto), false = desactivados. */
+  activo?: boolean;
+  /** Orden del listado: "reciente" (por defecto) o "nombre" (A-Z). */
+  orden?: OrdenProducto;
 }

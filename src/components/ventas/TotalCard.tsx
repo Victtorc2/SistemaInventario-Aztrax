@@ -39,8 +39,8 @@ interface TotalCardProps {
   clienteDocumento: string;
   discountError: string | null;
   submitting: boolean;
-  onIncrement: (id: number) => void;
-  onDecrement: (id: number) => void;
+  onIncrement: (key: string) => void;
+  onDecrement: (key: string) => void;
   onRemove: (item: CartItem) => void;
   onDescuentoTipo: (tipo: DescuentoTipo) => void;
   onDescuentoValor: (valor: number) => void;

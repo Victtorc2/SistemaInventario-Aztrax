@@ -27,6 +27,7 @@ import { useToast } from "@/context/ToastContext";
 import * as productoService from "@/services/productoService";
 import type {
   EstadoProducto,
+  OrdenProducto,
   Producto,
   ProductoFilters as Filters,
   ProductoPayload,
@@ -46,6 +47,8 @@ export function ProductosPage() {
     categoria: "",
     proveedor: "",
     estado: "",
+    activo: "",
+    orden: "",
   });
 
   const [formOpen, setFormOpen] = useState(false);
@@ -64,6 +67,9 @@ export function ProductosPage() {
           categoria: f.categoria ? Number(f.categoria) : undefined,
           proveedor: f.proveedor ? Number(f.proveedor) : undefined,
           estado: (f.estado || undefined) as EstadoProducto | undefined,
+          // "inactivos" -> activo=false; vacío -> por defecto (activos).
+          activo: f.activo === "inactivos" ? false : undefined,
+          orden: (f.orden || undefined) as OrdenProducto | undefined,
         };
         const data = await productoService.getProductos(query);
         setProductos(data);
@@ -124,6 +130,16 @@ export function ProductosPage() {
       setDeleting(null);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleReactivar = async (producto: Producto) => {
+    try {
+      await productoService.toggleActivoProducto(producto.id, true);
+      toast.success("Producto reactivado");
+      await load(debouncedSearch, filters);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo reactivar");
     }
   };
 
@@ -202,6 +218,7 @@ export function ProductosPage() {
           loading={loading}
           onEdit={openEdit}
           onDelete={(p) => setDeleting(p)}
+          onReactivar={handleReactivar}
         />
       )}
 

@@ -8,20 +8,27 @@
  */
 
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Power, Trash2 } from "lucide-react";
 import { StockBadge } from "@/components/productos/StockBadge";
 import { ActionIcon } from "@/components/ui/ActionIcon";
 import { Pagination } from "@/components/ui/Pagination";
 import { formatMoney } from "@/utils/format";
-import type { Producto } from "@/types/producto";
+import { REPRESENTACIONES, type Producto } from "@/types/producto";
 
 const PAGE_SIZE = 10;
+
+/** Etiqueta legible de la representación (con respaldo si llegara un valor nuevo). */
+function representacionLabel(value: string): string {
+  return REPRESENTACIONES.find((r) => r.value === value)?.label ?? value;
+}
 
 interface ProductoTableProps {
   productos: Producto[];
   loading: boolean;
   onEdit: (p: Producto) => void;
   onDelete: (p: Producto) => void;
+  /** Reactiva un producto desactivado. */
+  onReactivar: (p: Producto) => void;
 }
 
 export function ProductoTable({
@@ -29,6 +36,7 @@ export function ProductoTable({
   loading,
   onEdit,
   onDelete,
+  onReactivar,
 }: ProductoTableProps) {
   const [page, setPage] = useState(1);
 
@@ -70,18 +78,27 @@ export function ProductoTable({
                 : visible.map((p) => (
                     <tr
                       key={p.id}
-                      className="border-b border-line/60 transition-colors last:border-0 hover:bg-paper/60"
+                      className={[
+                        "border-b border-line/60 transition-colors last:border-0 hover:bg-paper/60",
+                        p.is_active ? "" : "bg-paper/40 opacity-70",
+                      ].join(" ")}
                     >
                       <td className="px-4 py-4 font-mono text-xs text-ink-soft">
                         {p.codigo}
                       </td>
                       <td className="px-4 py-4 font-medium text-ink">
-                        <div>{p.nombre}</div>
-                        {p.modelo ? (
-                          <div className="text-xs font-normal text-ink-faint">
-                            {p.modelo}
-                          </div>
-                        ) : null}
+                        <div className="flex items-center gap-2">
+                          <span>{p.nombre}</span>
+                          {!p.is_active ? (
+                            <span className="rounded-full bg-line px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-faint">
+                              Inactivo
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="text-xs font-normal text-ink-faint">
+                          {p.modelo ? `${p.modelo} · ` : ""}
+                          {representacionLabel(p.representacion)}
+                        </div>
                       </td>
                       <td className="px-4 py-4 text-ink-soft">{p.marca}</td>
                       <td className="px-4 py-4 text-ink-soft">{p.categoria}</td>
@@ -107,13 +124,23 @@ export function ProductoTable({
                           >
                             <Pencil size={16} />
                           </ActionIcon>
-                          <ActionIcon
-                            intent="delete"
-                            label={`Eliminar ${p.nombre}`}
-                            onClick={() => onDelete(p)}
-                          >
-                            <Trash2 size={16} />
-                          </ActionIcon>
+                          {p.is_active ? (
+                            <ActionIcon
+                              intent="delete"
+                              label={`Desactivar ${p.nombre}`}
+                              onClick={() => onDelete(p)}
+                            >
+                              <Trash2 size={16} />
+                            </ActionIcon>
+                          ) : (
+                            <ActionIcon
+                              intent="account"
+                              label={`Reactivar ${p.nombre}`}
+                              onClick={() => onReactivar(p)}
+                            >
+                              <Power size={16} />
+                            </ActionIcon>
+                          )}
                         </div>
                       </td>
                     </tr>

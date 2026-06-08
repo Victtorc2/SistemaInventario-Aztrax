@@ -19,7 +19,17 @@ import { SelectField } from "@/components/ui/SelectField";
 import { Button } from "@/components/ui/Button";
 import type { Categoria } from "@/types/categoria";
 import type { Proveedor } from "@/types/proveedor";
-import type { Producto, ProductoPayload } from "@/types/producto";
+import {
+  REPRESENTACIONES,
+  type Producto,
+  type ProductoPayload,
+  type Representacion,
+} from "@/types/producto";
+
+const REPRESENTACION_VALUES = REPRESENTACIONES.map((r) => r.value) as [
+  Representacion,
+  ...Representacion[],
+];
 
 // Convierte el valor del input (string) a número para validar. Cadena vacía
 // -> NaN, que falla las validaciones numéricas con el mensaje correspondiente.
@@ -42,6 +52,7 @@ const productoSchema = z.object({
   precio_venta: z.preprocess(toNumber, z.number({ invalid_type_error: "Precio inválido" }).positive("Precio inválido")),
   stock: z.preprocess(toNumber, z.number({ invalid_type_error: "Valor inválido" }).int("Debe ser entero").min(0, "Valor inválido")),
   stock_minimo: z.preprocess(toNumber, z.number({ invalid_type_error: "Valor inválido" }).int("Debe ser entero").min(0, "Valor inválido")),
+  representacion: z.enum(REPRESENTACION_VALUES),
 });
 
 type ProductoFormOutput = z.output<typeof productoSchema>;
@@ -61,6 +72,7 @@ interface ProductoFormFields {
   precio_venta: string;
   stock: string;
   stock_minimo: string;
+  representacion: Representacion;
 }
 
 interface ProductoFormProps {
@@ -113,6 +125,7 @@ export function ProductoForm({
         defaultValues?.stock_minimo !== undefined
           ? String(defaultValues.stock_minimo)
           : "",
+      representacion: defaultValues?.representacion ?? "unidad",
     },
   });
 
@@ -129,6 +142,7 @@ export function ProductoForm({
       precio_venta: out.precio_venta,
       stock: out.stock,
       stock_minimo: out.stock_minimo,
+      representacion: out.representacion,
     });
   };
 
@@ -150,12 +164,21 @@ export function ProductoForm({
         />
       </div>
 
-      <InputField
-        label="Modelo (opcional)"
-        placeholder="Ej. Botella retornable / Pavilion 15"
-        error={errors.modelo?.message}
-        {...register("modelo")}
-      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <InputField
+          label="Modelo (opcional)"
+          placeholder="Ej. Botella retornable / Pavilion 15"
+          error={errors.modelo?.message}
+          {...register("modelo")}
+        />
+        <SelectField
+          label="Representación"
+          hint="Cómo se vende: por unidad, sobre, caja, etc."
+          error={errors.representacion?.message}
+          options={REPRESENTACIONES.map((r) => ({ value: r.value, label: r.label }))}
+          {...register("representacion")}
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField

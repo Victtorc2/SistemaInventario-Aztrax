@@ -15,6 +15,10 @@ export interface ProductoFilterState {
   categoria: string;
   proveedor: string;
   estado: string;
+  /** "" = activos (por defecto), "inactivos" = desactivados. */
+  activo: string;
+  /** "" / "reciente" = recientes, "nombre" = alfabético A-Z. */
+  orden: string;
 }
 
 interface ProductoFiltersProps {
@@ -39,7 +43,12 @@ export function ProductoFilters({
   proveedores,
   onChange,
 }: ProductoFiltersProps) {
-  const hasFilters = value.categoria || value.proveedor || value.estado;
+  const hasFilters =
+    value.categoria ||
+    value.proveedor ||
+    value.estado ||
+    value.activo ||
+    value.orden;
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-white p-3 shadow-card">
@@ -85,10 +94,38 @@ export function ProductoFilters({
         ))}
       </select>
 
+      <select
+        className={selectCls}
+        value={value.activo}
+        onChange={(e) => onChange({ ...value, activo: e.target.value })}
+        aria-label="Filtrar por activación"
+      >
+        <option value="">Activos</option>
+        <option value="inactivos">Desactivados</option>
+      </select>
+
+      <select
+        className={selectCls}
+        value={value.orden}
+        onChange={(e) => onChange({ ...value, orden: e.target.value })}
+        aria-label="Ordenar productos"
+      >
+        <option value="">Más recientes</option>
+        <option value="nombre">Nombre (A-Z)</option>
+      </select>
+
       {hasFilters ? (
         <button
           type="button"
-          onClick={() => onChange({ categoria: "", proveedor: "", estado: "" })}
+          onClick={() =>
+            onChange({
+              categoria: "",
+              proveedor: "",
+              estado: "",
+              activo: "",
+              orden: "",
+            })
+          }
           className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-ink-faint transition-colors hover:bg-line/60 hover:text-ink"
         >
           <X size={14} />

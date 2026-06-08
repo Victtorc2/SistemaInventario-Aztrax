@@ -16,7 +16,7 @@ import type {
   MetodoPago,
   TipoPago,
 } from "@/types/cart";
-import type { Venta, VentaPayload } from "@/types/venta";
+import type { Venta, VentaItemPayload, VentaPayload } from "@/types/venta";
 
 /** Mapea el tipo de descuento del frontend al que espera el backend. */
 const MAP_TIPO: Record<string, "monto" | "porcentaje"> = {
@@ -46,11 +46,20 @@ export function buildVentaPayload(
   // id. Los datos rápidos (nombre/documento) solo aplican en contado cuando NO
   // hay un cliente registrado seleccionado.
   const usaClienteRegistrado = pago.clienteId != null;
+  const mapItem = (it: CartItem): VentaItemPayload => {
+    if (it.kind === "libre") {
+      // Línea libre: descripción + precio (y costo opcional). Sin producto_id.
+      return {
+        descripcion: it.descripcion,
+        precio: it.precio,
+        costo: it.costo ?? undefined,
+        cantidad: it.cantidad,
+      };
+    }
+    return { producto_id: it.producto.id, cantidad: it.cantidad };
+  };
   return {
-    items: items.map((it) => ({
-      producto_id: it.producto.id,
-      cantidad: it.cantidad,
-    })),
+    items: items.map(mapItem),
     descuento: descuento.tipo === "ninguno" ? 0 : descuento.valor,
     descuento_tipo:
       descuento.tipo === "ninguno" ? null : MAP_TIPO[descuento.tipo],

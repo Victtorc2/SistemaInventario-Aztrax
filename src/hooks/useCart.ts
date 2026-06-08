@@ -15,16 +15,33 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { Producto } from "@/types/producto";
-import type {
-  CartItem,
-  DescuentoState,
-  DescuentoTipo,
-  MetodoPago,
-  TipoPago,
+import {
+  cartItemKey,
+  type CartItem,
+  type DescuentoState,
+  type DescuentoTipo,
+  type MetodoPago,
+  type TipoPago,
 } from "@/types/cart";
 import { calculateTotals } from "@/utils/discount";
 
 type AddResult = "added" | "incremented" | "max_stock" | "out_of_stock";
+
+/** Datos para agregar una línea libre (producto no registrado). */
+export interface LibreInput {
+  descripcion: string;
+  precio: number;
+  costo: number | null;
+  cantidad: number;
+}
+
+/** Genera un id local único para una línea libre. */
+function makeUid(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 export function useCart() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -42,16 +59,22 @@ export function useCart() {
   const [clienteNombre, setClienteNombre] = useState<string>("");
   const [clienteDocumento, setClienteDocumento] = useState<string>("");
 
+  /** Cantidad máxima de una línea: el stock si es producto; sin tope si es libre. */
+  const maxCantidad = (it: CartItem): number =>
+    it.kind === "producto" ? it.producto.stock : Number.POSITIVE_INFINITY;
+
   /** Agrega un producto o incrementa su cantidad si ya está en el carrito. */
   const addItem = useCallback((producto: Producto): AddResult => {
     if (producto.stock <= 0) return "out_of_stock";
 
     let result: AddResult = "added";
     setItems((prev) => {
-      const existing = prev.find((it) => it.producto.id === producto.id);
+      const existing = prev.find(
+        (it) => it.kind === "producto" && it.producto.id === producto.id,
+      );
       if (!existing) {
         result = "added";
-        return [...prev, { producto, cantidad: 1 }];
+        return [...prev, { kind: "producto", producto, cantidad: 1 }];
       }
       // Ya existe: incrementamos si no superamos el stock.
       if (existing.cantidad >= producto.stock) {
@@ -60,7 +83,7 @@ export function useCart() {
       }
       result = "incremented";
       return prev.map((it) =>
-        it.producto.id === producto.id
+        it.kind === "producto" && it.producto.id === producto.id
           ? { ...it, cantidad: it.cantidad + 1 }
           : it,
       );
@@ -68,43 +91,54 @@ export function useCart() {
     return result;
   }, []);
 
-  /** Fija una cantidad concreta (acotada entre 1 y el stock). */
-  const setCantidad = useCallback((productoId: number, cantidad: number) => {
+  /** Agrega una línea libre (producto no registrado) al carrito. */
+  const addLibre = useCallback((data: LibreInput) => {
+    setItems((prev) => [
+      ...prev,
+      {
+        kind: "libre",
+        uid: makeUid(),
+        descripcion: data.descripcion,
+        precio: data.precio,
+        costo: data.costo,
+        cantidad: Math.max(1, data.cantidad),
+      },
+    ]);
+  }, []);
+
+  /** Fija una cantidad concreta (acotada entre 1 y el máximo de la línea). */
+  const setCantidad = useCallback((key: string, cantidad: number) => {
     setItems((prev) =>
       prev.map((it) => {
-        if (it.producto.id !== productoId) return it;
-        const max = it.producto.stock;
-        const clamped = Math.max(1, Math.min(cantidad, max));
+        if (cartItemKey(it) !== key) return it;
+        const clamped = Math.max(1, Math.min(cantidad, maxCantidad(it)));
         return { ...it, cantidad: clamped };
       }),
     );
   }, []);
 
-  const increment = useCallback(
-    (productoId: number) => {
-      setItems((prev) =>
-        prev.map((it) =>
-          it.producto.id === productoId && it.cantidad < it.producto.stock
-            ? { ...it, cantidad: it.cantidad + 1 }
-            : it,
-        ),
-      );
-    },
-    [],
-  );
-
-  const decrement = useCallback((productoId: number) => {
+  const increment = useCallback((key: string) => {
     setItems((prev) =>
       prev.map((it) =>
-        it.producto.id === productoId && it.cantidad > 1
+        cartItemKey(it) === key && it.cantidad < maxCantidad(it)
+          ? { ...it, cantidad: it.cantidad + 1 }
+          : it,
+      ),
+    );
+  }, []);
+
+  const decrement = useCallback((key: string) => {
+    setItems((prev) =>
+      prev.map((it) =>
+        cartItemKey(it) === key && it.cantidad > 1
           ? { ...it, cantidad: it.cantidad - 1 }
           : it,
       ),
     );
   }, []);
 
-  const removeItem = useCallback((productoId: number) => {
-    setItems((prev) => prev.filter((it) => it.producto.id !== productoId));
+  const removeItem = useCallback((key: string) => {
+    setItems((prev) => prev.filter((it) => cartItemKey(it) !== key));
   }, []);
 
   const clear = useCallback(() => {
@@ -138,6 +172,7 @@ export function useCart() {
     totals,
     isEmpty: items.length === 0,
     addItem,
+    addLibre,
     increment,
     decrement,
     setCantidad,

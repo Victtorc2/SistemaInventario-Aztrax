@@ -13,8 +13,11 @@ function round2(n: number): number {
   return Math.round((n + Number.EPSILON) * 100) / 100;
 }
 
-/** Precio de venta de un producto como número (el backend puede dar string). */
+/** Precio unitario de una línea como número (producto registrado o línea libre). */
 export function precioVenta(item: CartItem): number {
+  if (item.kind === "libre") {
+    return Number.isNaN(item.precio) ? 0 : item.precio;
+  }
   const p = item.producto.precio_venta;
   const n = typeof p === "string" ? parseFloat(p) : p;
   return Number.isNaN(n) ? 0 : n;

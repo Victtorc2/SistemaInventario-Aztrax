@@ -6,7 +6,8 @@
 type Money = string | number;
 
 export interface RentabilidadProducto {
-  producto_id: number;
+  // null en la fila agregada de "Ventas libres" (líneas sin producto registrado).
+  producto_id: number | null;
   codigo: string;
   nombre: string;
   marca: string;

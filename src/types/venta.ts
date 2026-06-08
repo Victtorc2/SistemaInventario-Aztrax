@@ -11,11 +11,16 @@
 
 import type { DescuentoTipo, MetodoPago, TipoPago } from "@/types/cart";
 
-/** Un item del payload de venta. */
-export interface VentaItemPayload {
-  producto_id: number;
-  cantidad: number;
-}
+/** Un item del payload de venta: producto registrado O línea libre. */
+export type VentaItemPayload =
+  | { producto_id: number; cantidad: number }
+  | {
+      // Línea libre: producto no registrado, con precio (y costo) escritos a mano.
+      descripcion: string;
+      precio: number;
+      costo?: number | null;
+      cantidad: number;
+    };
 
 /** Payload para registrar una venta. */
 export interface VentaPayload {
@@ -37,10 +42,13 @@ export interface VentaPayload {
 /** Línea de detalle devuelta por el backend. */
 export interface VentaDetalle {
   id: number;
-  producto_id: number;
-  producto: string;
+  // null en líneas libres (producto no registrado).
+  producto_id: number | null;
+  producto: string; // nombre del producto o descripción de la línea libre
   marca: string;
   codigo: string;
+  // true si es una línea escrita a mano (sin producto registrado).
+  es_libre: boolean;
   cantidad: number;
   precio: string | number;
   subtotal: string | number;

@@ -302,12 +302,14 @@ function RentabilidadPorProducto({ data }: { data: ReporteRentabilidad }) {
           <tbody>
             {data.por_producto.map((p) => (
               <tr
-                key={p.producto_id}
+                key={p.producto_id ?? `libre-${p.nombre}`}
                 className="border-b border-line/60 transition-colors last:border-0 hover:bg-paper/60"
               >
                 <td className="px-5 py-4">
                   <p className="font-medium text-ink">{p.nombre}</p>
-                  <p className="text-xs text-ink-faint">{p.marca}</p>
+                  <p className="text-xs text-ink-faint">
+                    {p.producto_id === null ? "Productos no registrados" : p.marca}
+                  </p>
                 </td>
                 <td className="px-5 py-4 text-center tabular-nums text-ink-soft">
                   {p.unidades_vendidas}

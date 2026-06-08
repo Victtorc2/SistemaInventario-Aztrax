@@ -28,11 +28,15 @@ export async function getProductos(
   filters: ProductoFilters = {},
 ): Promise<Producto[]> {
   // Construimos params solo con los filtros definidos.
-  const params: Record<string, string | number> = { page_size: 100 };
+  const params: Record<string, string | number | boolean> = { page_size: 100 };
   if (filters.search?.trim()) params.search = filters.search.trim();
   if (filters.categoria) params.categoria = filters.categoria;
   if (filters.proveedor) params.proveedor = filters.proveedor;
   if (filters.estado) params.estado = filters.estado;
+  // activo: solo lo enviamos cuando se pide explícitamente desactivados
+  // (false). Omitirlo deja el comportamiento por defecto del backend (activos).
+  if (filters.activo === false) params.activo = false;
+  if (filters.orden) params.orden = filters.orden;
 
   const { data } = await axiosClient.get<PaginatedProductos | Producto[]>(
     "/productos",
@@ -87,6 +91,33 @@ export async function updateProducto(
     return data;
   } catch (error) {
     throw new Error(resolveAxiosError(error, "No se pudo actualizar el producto"));
+  }
+}
+
+/**
+ * Activa o desactiva un producto (soft delete reversible).
+ *
+ * A diferencia de `deleteProducto`, esto permite REACTIVAR uno desactivado
+ * (PUT /productos/{id}/activo?activo=true|false).
+ */
+export async function toggleActivoProducto(
+  id: number,
+  activo: boolean,
+): Promise<Producto> {
+  try {
+    const { data } = await axiosClient.put<Producto>(
+      `/productos/${id}/activo`,
+      null,
+      { params: { activo } },
+    );
+    return data;
+  } catch (error) {
+    throw new Error(
+      resolveAxiosError(
+        error,
+        activo ? "No se pudo activar el producto" : "No se pudo desactivar el producto",
+      ),
+    );
   }
 }
 

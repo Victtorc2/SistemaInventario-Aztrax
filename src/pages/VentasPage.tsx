@@ -11,12 +11,15 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PlusCircle } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SearchProductoVenta } from "@/components/ventas/SearchProductoVenta";
 import { ProductoVentaTable } from "@/components/ventas/ProductoVentaTable";
 import { TotalCard } from "@/components/ventas/TotalCard";
 import { ConfirmVentaModal } from "@/components/ventas/ConfirmVentaModal";
 import { CancelVentaModal } from "@/components/ventas/CancelVentaModal";
+import { LineaLibreModal } from "@/components/ventas/LineaLibreModal";
+import { Button } from "@/components/ui/Button";
 import { useCart } from "@/hooks/useCart";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useToast } from "@/context/ToastContext";
@@ -25,7 +28,7 @@ import * as productoService from "@/services/productoService";
 import * as ventaService from "@/services/ventaService";
 import * as clienteService from "@/services/clienteService";
 import type { Producto } from "@/types/producto";
-import type { CartItem } from "@/types/cart";
+import { cartItemKey, type CartItem } from "@/types/cart";
 import type { Cliente } from "@/types/cliente";
 
 export function VentasPage() {
@@ -45,6 +48,7 @@ export function VentasPage() {
   // --- Modales / envío ---
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [libreOpen, setLibreOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Carga de clientes (una vez).
@@ -109,8 +113,14 @@ export function VentasPage() {
   };
 
   const handleRemove = (item: CartItem) => {
-    cart.removeItem(item.producto.id);
+    cart.removeItem(cartItemKey(item));
     toast.info("Producto eliminado");
+  };
+
+  // Agrega una línea libre (producto no registrado) al carrito.
+  const handleAddLibre = (data: Parameters<typeof cart.addLibre>[0]) => {
+    cart.addLibre(data);
+    toast.success("Línea libre agregada");
   };
 
   // --- Confirmar venta ---
@@ -188,7 +198,20 @@ export function VentasPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
         {/* --- Izquierda: productos --- */}
         <div className="flex flex-col gap-4">
-          <SearchProductoVenta value={search} onChange={setSearch} />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex-1">
+              <SearchProductoVenta value={search} onChange={setSearch} />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setLibreOpen(true)}
+              title="Vender algo que no está registrado en el inventario"
+            >
+              <PlusCircle size={16} />
+              Línea libre
+            </Button>
+          </div>
           <ProductoVentaTable
             productos={resultados}
             loading={loading}
@@ -241,6 +264,12 @@ export function VentasPage() {
         open={cancelOpen}
         onConfirm={handleCancel}
         onClose={() => setCancelOpen(false)}
+      />
+
+      <LineaLibreModal
+        open={libreOpen}
+        onClose={() => setLibreOpen(false)}
+        onAdd={handleAddLibre}
       />
     </PageContainer>
   );
