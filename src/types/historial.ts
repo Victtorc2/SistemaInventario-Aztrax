@@ -14,6 +14,7 @@ export interface HistorialItem {
   subtotal: string | number;
   descuento: string | number;
   total: string | number;
+  anulada: boolean;
   cantidad_productos: number;
 }
 

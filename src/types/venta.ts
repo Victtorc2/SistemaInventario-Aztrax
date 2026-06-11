@@ -67,6 +67,8 @@ export interface Venta {
   saldo_pendiente: string | number;
   cliente_id: number | null;
   cliente_nombre: string | null;
+  anulada: boolean;
+  motivo_anulacion: string | null;
   total: string | number;
   detalles: VentaDetalle[];
 }

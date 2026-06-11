@@ -10,7 +10,7 @@
  */
 
 import { memo, useCallback } from "react";
-import { Eye, FileText, Printer } from "lucide-react";
+import { Ban, Eye, FileText, Printer } from "lucide-react";
 import { formatMoney, formatDate } from "@/utils/format";
 import { ActionIcon } from "@/components/ui/ActionIcon";
 import { Pagination } from "@/components/ui/Pagination";
@@ -27,6 +27,7 @@ interface HistorialTableProps {
   onVerDetalle: (item: HistorialItem) => void;
   onVerBoleta: (item: HistorialItem) => void;
   onReimprimir: (item: HistorialItem) => void;
+  onAnular: (item: HistorialItem) => void;
 }
 
 function toNum(v: string | number): number {
@@ -44,6 +45,7 @@ export function HistorialTable({
   onVerDetalle,
   onVerBoleta,
   onReimprimir,
+  onAnular,
 }: HistorialTableProps) {
   if (loading) {
     return <TableSkeleton rows={6} columns={7} />;
@@ -73,6 +75,7 @@ export function HistorialTable({
                   onVerDetalle={onVerDetalle}
                   onVerBoleta={onVerBoleta}
                   onReimprimir={onReimprimir}
+                  onAnular={onAnular}
                 />
               ))}
             </tbody>
@@ -96,6 +99,7 @@ interface HistorialRowProps {
   onVerDetalle: (item: HistorialItem) => void;
   onVerBoleta: (item: HistorialItem) => void;
   onReimprimir: (item: HistorialItem) => void;
+  onAnular: (item: HistorialItem) => void;
 }
 
 const HistorialRow = memo(function HistorialRow({
@@ -103,19 +107,33 @@ const HistorialRow = memo(function HistorialRow({
   onVerDetalle,
   onVerBoleta,
   onReimprimir,
+  onAnular,
 }: HistorialRowProps) {
   // useCallback estabiliza los handlers para que los hijos memoizados no
   // se vuelvan a renderizar si el item no ha cambiado.
   const handleDetalle = useCallback(() => onVerDetalle(item), [item, onVerDetalle]);
   const handleBoleta = useCallback(() => onVerBoleta(item), [item, onVerBoleta]);
   const handleReimp = useCallback(() => onReimprimir(item), [item, onReimprimir]);
+  const handleAnular = useCallback(() => onAnular(item), [item, onAnular]);
 
   const descuento = toNum(item.descuento);
 
   return (
-    <tr className="border-b border-line/60 transition-colors last:border-0 hover:bg-paper/60">
+    <tr
+      className={[
+        "border-b border-line/60 transition-colors last:border-0 hover:bg-paper/60",
+        item.anulada ? "bg-rose-50/40" : "",
+      ].join(" ")}
+    >
       <td className="px-5 py-4 font-mono text-xs font-medium text-ink">
-        {item.numero_boleta}
+        <span className="flex items-center gap-2">
+          {item.numero_boleta}
+          {item.anulada ? (
+            <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-danger">
+              Anulada
+            </span>
+          ) : null}
+        </span>
       </td>
       <td className="px-5 py-4 text-ink-soft">{formatDate(item.fecha)}</td>
       <td className="px-5 py-4 text-center tabular-nums text-ink-soft">
@@ -131,7 +149,12 @@ const HistorialRow = memo(function HistorialRow({
           <span className="text-ink-faint">—</span>
         )}
       </td>
-      <td className="px-5 py-4 text-right font-semibold tabular-nums text-ink">
+      <td
+        className={[
+          "px-5 py-4 text-right font-semibold tabular-nums",
+          item.anulada ? "text-ink-faint line-through" : "text-ink",
+        ].join(" ")}
+      >
         {formatMoney(toNum(item.total))}
       </td>
       <td className="px-5 py-4">
@@ -145,6 +168,11 @@ const HistorialRow = memo(function HistorialRow({
           <ActionIcon intent="print" label="Reimprimir" onClick={handleReimp}>
             <Printer size={16} />
           </ActionIcon>
+          {!item.anulada ? (
+            <ActionIcon intent="delete" label="Anular venta" onClick={handleAnular}>
+              <Ban size={16} />
+            </ActionIcon>
+          ) : null}
         </div>
       </td>
     </tr>

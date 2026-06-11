@@ -6,8 +6,14 @@
 
 import { axiosClient } from "@/api/axiosClient";
 import { resolveAxiosError } from "@/utils/errorHandler";
-import type { Cliente, ClientePayload } from "@/types/cliente";
+import type {
+  Cliente,
+  ClienteInactivo,
+  ClientePayload,
+  PerfilCliente,
+} from "@/types/cliente";
 import type { AbonoPayload, Abono, EstadoCuenta } from "@/types/credito";
+import type { CanjePayload, PuntosResumen } from "@/types/puntos";
 
 /** Lista clientes. Con `search`, filtra por nombre/documento/teléfono. */
 export async function getClientes(search?: string): Promise<Cliente[]> {
@@ -35,6 +41,49 @@ export async function getEstadoCuenta(id: number): Promise<EstadoCuenta> {
     `/clientes/${id}/estado-cuenta`,
   );
   return data;
+}
+
+/** Perfil 360° del cliente: métricas de compra, favoritos e historial. */
+export async function getPerfilCliente(id: number): Promise<PerfilCliente> {
+  const { data } = await axiosClient.get<PerfilCliente>(
+    `/clientes/${id}/perfil`,
+  );
+  return data;
+}
+
+/** Clientes que no compran hace al menos `dias` días (para recuperar). */
+export async function getClientesInactivos(
+  dias = 30,
+): Promise<ClienteInactivo[]> {
+  const { data } = await axiosClient.get<ClienteInactivo[]>(
+    "/clientes/inactivos",
+    { params: { dias } },
+  );
+  return data;
+}
+
+/** Saldo de puntos del cliente y su historial de movimientos. */
+export async function getPuntos(id: number): Promise<PuntosResumen> {
+  const { data } = await axiosClient.get<PuntosResumen>(
+    `/clientes/${id}/puntos`,
+  );
+  return data;
+}
+
+/** Canjea puntos del cliente. Devuelve el saldo actualizado. */
+export async function canjearPuntos(
+  id: number,
+  payload: CanjePayload,
+): Promise<PuntosResumen> {
+  try {
+    const { data } = await axiosClient.post<PuntosResumen>(
+      `/clientes/${id}/puntos/canjear`,
+      payload,
+    );
+    return data;
+  } catch (error) {
+    throw new Error(resolveAxiosError(error, "No se pudieron canjear los puntos"));
+  }
 }
 
 /** Crea un cliente. */

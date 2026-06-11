@@ -23,16 +23,20 @@ import { HistorialTable } from "@/components/historial/HistorialTable";
 import { HistorialStats } from "@/components/historial/HistorialStats";
 import { DetalleVentaModal } from "@/components/historial/DetalleVentaModal";
 import { BoletaModal } from "@/components/historial/BoletaModal";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useToast } from "@/context/ToastContext";
 import { getErrorMessage } from "@/utils/errorHandler";
 import * as historialService from "@/services/historialService";
+import { anularVenta } from "@/services/ventaService";
 import type { HistorialItem } from "@/types/historial";
 import type { Venta } from "@/types/venta";
 
 const PAGE_SIZE = 10;
 
 export function HistorialPage() {
+  const toast = useToast();
   const [items, setItems] = useState<HistorialItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -52,6 +56,8 @@ export function HistorialPage() {
   const [detalleId, setDetalleId] = useState<number | null>(null);
   const [boletaId, setBoletaId] = useState<number | null>(null);
   const [boletaPrecargada, setBoletaPrecargada] = useState<Venta | null>(null);
+  const [anulando, setAnulando] = useState<HistorialItem | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(
     async (term: string, f: FechaFilterState, pageNum: number) => {
@@ -100,6 +106,23 @@ export function HistorialPage() {
     setBoletaPrecargada(null);
     setBoletaId(item.id);
   }, []);
+  const handleAnular = useCallback((item: HistorialItem) => setAnulando(item), []);
+
+  const confirmarAnular = async () => {
+    if (!anulando) return;
+    setSubmitting(true);
+    try {
+      await anularVenta(anulando.id);
+      toast.success("Venta anulada: stock repuesto y puntos revertidos");
+      setAnulando(null);
+      await load(debouncedSearch, fechas, page);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo anular la venta");
+      setAnulando(null);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Desde el detalle saltamos a la boleta pasando el detalle ya cargado.
   const handleVerBoletaDesdeDetalle = useCallback((venta: Venta) => {
@@ -158,6 +181,7 @@ export function HistorialPage() {
           onVerDetalle={handleVerDetalle}
           onVerBoleta={handleVerBoleta}
           onReimprimir={handleReimprimir}
+          onAnular={handleAnular}
         />
       )}
 
@@ -176,6 +200,29 @@ export function HistorialPage() {
           setBoletaId(null);
           setBoletaPrecargada(null);
         }}
+      />
+
+      <ConfirmModal
+        open={Boolean(anulando)}
+        title="Anular venta"
+        tone="danger"
+        confirmLabel="Anular"
+        loading={submitting}
+        onConfirm={confirmarAnular}
+        onClose={() => {
+          if (!submitting) setAnulando(null);
+        }}
+        message={
+          <>
+            ¿Anular la venta{" "}
+            <span className="font-mono font-medium text-ink">
+              {anulando?.numero_boleta}
+            </span>
+            ? Se repondrá el stock de sus productos y se revertirán los puntos
+            otorgados. La venta dejará de contar en los reportes. Esta acción no
+            se puede deshacer.
+          </>
+        }
       />
     </PageContainer>
   );

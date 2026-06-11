@@ -44,6 +44,10 @@ const clienteSchema = z.object({
     emptyToUndef,
     z.string().trim().max(200, "Máximo 200 caracteres").optional(),
   ),
+  fecha_nacimiento: z.preprocess(
+    emptyToUndef,
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida").optional(),
+  ),
   nota: z.preprocess(
     emptyToUndef,
     z.string().trim().max(255, "Máximo 255 caracteres").optional(),
@@ -77,6 +81,7 @@ export function ClienteForm({
       telefono: defaultValues?.telefono ?? undefined,
       email: defaultValues?.email ?? undefined,
       direccion: defaultValues?.direccion ?? undefined,
+      fecha_nacimiento: defaultValues?.fecha_nacimiento ?? undefined,
       nota: defaultValues?.nota ?? undefined,
     },
   });
@@ -113,12 +118,20 @@ export function ClienteForm({
         {...register("email")}
       />
 
-      <InputField
-        label="Dirección"
-        placeholder="Ej. Av. Pesca 123"
-        error={errors.direccion?.message}
-        {...register("direccion")}
-      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <InputField
+          label="Dirección"
+          placeholder="Ej. Av. Pesca 123"
+          error={errors.direccion?.message}
+          {...register("direccion")}
+        />
+        <InputField
+          label="Fecha de nacimiento"
+          type="date"
+          error={errors.fecha_nacimiento?.message}
+          {...register("fecha_nacimiento")}
+        />
+      </div>
 
       <TextareaField
         label="Nota"

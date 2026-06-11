@@ -6,7 +6,7 @@
  */
 
 import { useState } from "react";
-import { Wallet, Pencil, Trash2 } from "lucide-react";
+import { Wallet, Pencil, Trash2, UserSearch } from "lucide-react";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ActionIcon } from "@/components/ui/ActionIcon";
@@ -20,6 +20,7 @@ const PAGE_SIZE = 10;
 interface ClienteTableProps {
   clientes: Cliente[];
   loading: boolean;
+  onPerfil: (cliente: Cliente) => void;
   onEstadoCuenta: (cliente: Cliente) => void;
   onEdit: (cliente: Cliente) => void;
   onDelete: (cliente: Cliente) => void;
@@ -33,13 +34,14 @@ function toNum(v: string | number): number {
 export function ClienteTable({
   clientes,
   loading,
+  onPerfil,
   onEstadoCuenta,
   onEdit,
   onDelete,
 }: ClienteTableProps) {
   const [page, setPage] = useState(1);
 
-  if (loading) return <TableSkeleton rows={6} columns={5} />;
+  if (loading) return <TableSkeleton rows={6} columns={6} />;
 
   if (clientes.length === 0) {
     return (
@@ -66,6 +68,7 @@ export function ClienteTable({
                 <th className="px-5 py-3 font-medium">Cliente</th>
                 <th className="px-5 py-3 font-medium">Documento</th>
                 <th className="px-5 py-3 font-medium">Teléfono</th>
+                <th className="px-5 py-3 text-right font-medium">Puntos</th>
                 <th className="px-5 py-3 text-right font-medium">Deuda</th>
                 <th className="px-5 py-3 text-right font-medium">Acciones</th>
               </tr>
@@ -87,6 +90,15 @@ export function ClienteTable({
                   <td className="px-5 py-4 text-ink-soft">{c.documento ?? "—"}</td>
                   <td className="px-5 py-4 text-ink-soft">{c.telefono ?? "—"}</td>
                   <td className="px-5 py-4 text-right">
+                    {c.puntos > 0 ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium tabular-nums text-amber-700">
+                        {c.puntos} pts
+                      </span>
+                    ) : (
+                      <span className="text-xs text-ink-faint">0</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4 text-right">
                     {deuda > 0 ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium tabular-nums text-danger">
                         {formatMoney(deuda)}
@@ -97,6 +109,13 @@ export function ClienteTable({
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
+                      <ActionIcon
+                        intent="view"
+                        label={`Ver perfil de ${c.nombre}`}
+                        onClick={() => onPerfil(c)}
+                      >
+                        <UserSearch size={16} />
+                      </ActionIcon>
                       <ActionIcon
                         intent="account"
                         label={`Estado de cuenta de ${c.nombre}`}

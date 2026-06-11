@@ -88,3 +88,18 @@ export async function getVenta(id: number): Promise<Venta> {
   const { data } = await axiosClient.get<Venta>(`/historial/${id}`);
   return data;
 }
+
+/**
+ * Anula una venta (devolución total): repone el stock, revierte los puntos y la
+ * marca como anulada. Devuelve la venta anulada.
+ */
+export async function anularVenta(id: number, motivo?: string): Promise<Venta> {
+  try {
+    const { data } = await axiosClient.post<Venta>(`/ventas/${id}/anular`, {
+      motivo: motivo?.trim() || null,
+    });
+    return data;
+  } catch (error) {
+    throw new Error(resolveAxiosError(error, "No se pudo anular la venta"));
+  }
+}

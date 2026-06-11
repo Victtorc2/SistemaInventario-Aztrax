@@ -43,6 +43,9 @@ const HistorialPage = lazy(() =>
 const ClientesPage = lazy(() =>
   import("@/pages/ClientesPage").then((m) => ({ default: m.ClientesPage })),
 );
+const CajaPage = lazy(() =>
+  import("@/pages/CajaPage").then((m) => ({ default: m.CajaPage })),
+);
 const RentabilidadPage = lazy(() =>
   import("@/pages/RentabilidadPage").then((m) => ({ default: m.RentabilidadPage })),
 );
@@ -83,6 +86,7 @@ export function AppRoutes() {
           <Route path="/proveedores" element={lazyRoute(<ProveedoresPage />)} />
           <Route path="/ventas" element={lazyRoute(<VentasPage />)} />
           <Route path="/clientes" element={lazyRoute(<ClientesPage />)} />
+          <Route path="/caja" element={lazyRoute(<CajaPage />)} />
           <Route path="/rentabilidad" element={lazyRoute(<RentabilidadPage />)} />
           <Route
             path="/productos-por-pedir"

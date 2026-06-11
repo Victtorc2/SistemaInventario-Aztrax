@@ -1,9 +1,10 @@
 /**
- * ClientesPage: gestión de clientes y su fiado.
+ * ClientesPage: gestión de clientes, su fiado y fidelización.
  *
- * CRUD de clientes con búsqueda (debounce), más el estado de cuenta (ventas a
- * crédito y abonos). Permite filtrar solo deudores. Reutiliza el ConfirmModal
- * para la baja (que el backend bloquea si el cliente tiene deuda).
+ * CRUD de clientes con búsqueda (debounce), estado de cuenta (ventas a crédito
+ * y abonos) y perfil 360° (métricas de compra, favoritos y puntos). Permite
+ * filtrar todos / deudores / inactivos (los que no compran hace tiempo, para
+ * recuperarlos). Reutiliza el ConfirmModal para la baja.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -13,13 +14,17 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { SearchCliente } from "@/components/clientes/SearchCliente";
 import { ClienteTable } from "@/components/clientes/ClienteTable";
+import { InactivosTable } from "@/components/clientes/InactivosTable";
 import { ClienteModal } from "@/components/clientes/ClienteModal";
 import { EstadoCuentaModal } from "@/components/clientes/EstadoCuentaModal";
+import { PerfilClienteModal } from "@/components/clientes/PerfilClienteModal";
 import type { ClienteFormValues } from "@/components/clientes/ClienteForm";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useToast } from "@/context/ToastContext";
 import * as clienteService from "@/services/clienteService";
-import type { Cliente, ClientePayload } from "@/types/cliente";
+import type { Cliente, ClienteInactivo, ClientePayload } from "@/types/cliente";
+
+type Vista = "todos" | "deudores" | "inactivos";
 
 function toPayload(values: ClienteFormValues): ClientePayload {
   return {
@@ -28,6 +33,7 @@ function toPayload(values: ClienteFormValues): ClientePayload {
     telefono: values.telefono ?? null,
     email: values.email ?? null,
     direccion: values.direccion ?? null,
+    fecha_nacimiento: values.fecha_nacimiento ?? null,
     nota: values.nota ?? null,
   };
 }
@@ -36,40 +42,42 @@ export function ClientesPage() {
   const toast = useToast();
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [inactivos, setInactivos] = useState<ClienteInactivo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 350);
-  const [soloDeudores, setSoloDeudores] = useState(false);
+  const [vista, setVista] = useState<Vista>("todos");
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Cliente | null>(null);
   const [deleting, setDeleting] = useState<Cliente | null>(null);
   const [estadoCuenta, setEstadoCuenta] = useState<Cliente | null>(null);
+  const [perfilId, setPerfilId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const load = useCallback(
-    async (term: string, deudores: boolean) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = deudores
-          ? await clienteService.getDeudores()
-          : await clienteService.getClientes(term || undefined);
-        setClientes(data);
-      } catch {
-        setError("No se pudieron cargar los clientes.");
-      } finally {
-        setLoading(false);
+  const load = useCallback(async (term: string, v: Vista) => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (v === "inactivos") {
+        setInactivos(await clienteService.getClientesInactivos(30));
+      } else if (v === "deudores") {
+        setClientes(await clienteService.getDeudores());
+      } else {
+        setClientes(await clienteService.getClientes(term || undefined));
       }
-    },
-    [],
-  );
+    } catch {
+      setError("No se pudieron cargar los clientes.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    void load(debouncedSearch, soloDeudores);
-  }, [debouncedSearch, soloDeudores, load]);
+    void load(debouncedSearch, vista);
+  }, [debouncedSearch, vista, load]);
 
   const openCreate = () => {
     setEditing(null);
@@ -89,7 +97,7 @@ export function ClientesPage() {
       }
       setFormOpen(false);
       setEditing(null);
-      await load(debouncedSearch, soloDeudores);
+      await load(debouncedSearch, vista);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Ocurrió un error");
     } finally {
@@ -104,7 +112,7 @@ export function ClientesPage() {
       await clienteService.deleteCliente(deleting.id);
       toast.success("Cliente eliminado");
       setDeleting(null);
-      await load(debouncedSearch, soloDeudores);
+      await load(debouncedSearch, vista);
     } catch (e) {
       // Incluye "El cliente tiene deuda pendiente".
       toast.error(e instanceof Error ? e.message : "No se pudo eliminar");
@@ -114,10 +122,16 @@ export function ClientesPage() {
     }
   };
 
+  const filtros: { value: Vista; label: string }[] = [
+    { value: "todos", label: "Todos" },
+    { value: "deudores", label: "Con deuda" },
+    { value: "inactivos", label: "Inactivos" },
+  ];
+
   return (
     <PageContainer
       title="Clientes"
-      subtitle="Administra tus clientes y sus cuentas al crédito"
+      subtitle="Administra tus clientes, su crédito y fidelización"
       actions={
         <>
           <SearchCliente value={search} onChange={setSearch} />
@@ -128,32 +142,23 @@ export function ClientesPage() {
         </>
       }
     >
-      {/* Filtro deudores */}
+      {/* Filtros de vista */}
       <div className="mb-4 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setSoloDeudores(false)}
-          className={[
-            "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            !soloDeudores
-              ? "bg-accent text-white"
-              : "text-ink-soft hover:bg-line/60",
-          ].join(" ")}
-        >
-          Todos
-        </button>
-        <button
-          type="button"
-          onClick={() => setSoloDeudores(true)}
-          className={[
-            "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            soloDeudores
-              ? "bg-accent text-white"
-              : "text-ink-soft hover:bg-line/60",
-          ].join(" ")}
-        >
-          Con deuda
-        </button>
+        {filtros.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => setVista(f.value)}
+            className={[
+              "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+              vista === f.value
+                ? "bg-accent text-white"
+                : "text-ink-soft hover:bg-line/60",
+            ].join(" ")}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       {error ? (
@@ -161,7 +166,7 @@ export function ClientesPage() {
           <span>{error}</span>
           <button
             type="button"
-            onClick={() => load(debouncedSearch, soloDeudores)}
+            onClick={() => load(debouncedSearch, vista)}
             className="inline-flex items-center gap-1.5 font-medium hover:underline"
           >
             <RefreshCw size={14} />
@@ -170,16 +175,21 @@ export function ClientesPage() {
         </div>
       ) : null}
 
-      <ClienteTable
-        clientes={clientes}
-        loading={loading}
-        onEstadoCuenta={(c) => setEstadoCuenta(c)}
-        onEdit={(c) => {
-          setEditing(c);
-          setFormOpen(true);
-        }}
-        onDelete={(c) => setDeleting(c)}
-      />
+      {vista === "inactivos" ? (
+        <InactivosTable inactivos={inactivos} loading={loading} />
+      ) : (
+        <ClienteTable
+          clientes={clientes}
+          loading={loading}
+          onPerfil={(c) => setPerfilId(c.id)}
+          onEstadoCuenta={(c) => setEstadoCuenta(c)}
+          onEdit={(c) => {
+            setEditing(c);
+            setFormOpen(true);
+          }}
+          onDelete={(c) => setDeleting(c)}
+        />
+      )}
 
       <ClienteModal
         open={formOpen}
@@ -198,7 +208,14 @@ export function ClientesPage() {
         open={Boolean(estadoCuenta)}
         cliente={estadoCuenta}
         onClose={() => setEstadoCuenta(null)}
-        onChanged={() => load(debouncedSearch, soloDeudores)}
+        onChanged={() => load(debouncedSearch, vista)}
+      />
+
+      <PerfilClienteModal
+        open={perfilId !== null}
+        clienteId={perfilId}
+        onClose={() => setPerfilId(null)}
+        onChanged={() => load(debouncedSearch, vista)}
       />
 
       <ConfirmModal

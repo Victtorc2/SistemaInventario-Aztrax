@@ -78,8 +78,13 @@ export function DetalleVentaModal({
                 <Receipt size={17} />
               </div>
               <div>
-                <p className="font-mono text-sm font-semibold">
+                <p className="flex items-center gap-2 font-mono text-sm font-semibold">
                   {venta.numero_boleta}
+                  {venta.anulada ? (
+                    <span className="rounded bg-rose-100 px-1.5 py-0.5 font-sans text-[10px] font-medium uppercase tracking-wide text-danger">
+                      Anulada
+                    </span>
+                  ) : null}
                 </p>
                 <p className="text-xs text-ink-faint">{formatDate(venta.fecha)}</p>
               </div>
