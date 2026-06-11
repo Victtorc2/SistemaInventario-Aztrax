@@ -8,15 +8,18 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Loader } from "@/components/ui/Loader";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useToast } from "@/context/ToastContext";
 import { formatMoney } from "@/utils/format";
 import { getDetalleVenta } from "@/services/historialService";
 import { editarVenta } from "@/services/ventaService";
+import { searchProductos } from "@/services/productoService";
 import type { DescuentoTipo, MetodoPago } from "@/types/cart";
+import type { Producto } from "@/types/producto";
 import type { Venta, VentaItemPayload, VentaPayload } from "@/types/venta";
 
 interface EditarVentaModalProps {
@@ -42,6 +45,11 @@ function toNum(v: string | number): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
+/** Clave de una línea para un producto registrado recién agregado. */
+function nuevaClave(productoId: number): string {
+  return `nuevo-${productoId}`;
+}
+
 export function EditarVentaModal({
   open,
   ventaId,
@@ -57,10 +65,18 @@ export function EditarVentaModal({
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Buscador para agregar productos.
+  const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
+  const [resultados, setResultados] = useState<Producto[]>([]);
+  const [buscando, setBuscando] = useState(false);
+
   useEffect(() => {
     if (!open || ventaId == null) return;
     let active = true;
     setLoading(true);
+    setQuery("");
+    setResultados([]);
     getDetalleVenta(ventaId)
       .then((data) => {
         if (!active) return;
@@ -90,6 +106,50 @@ export function EditarVentaModal({
       active = false;
     };
   }, [open, ventaId, toast, onClose]);
+
+  // Buscar productos al teclear (debounced).
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (!open || q.length < 2) {
+      setResultados([]);
+      return;
+    }
+    let active = true;
+    setBuscando(true);
+    searchProductos(q)
+      .then((data) => active && setResultados(data))
+      .catch(() => active && setResultados([]))
+      .finally(() => active && setBuscando(false));
+    return () => {
+      active = false;
+    };
+  }, [debouncedQuery, open]);
+
+  /** Agrega un producto a la venta (o incrementa su cantidad si ya está). */
+  const agregarProducto = (p: Producto) => {
+    setLines((prev) => {
+      const existente = prev.find((l) => !l.esLibre && l.productoId === p.id);
+      if (existente) {
+        return prev.map((l) =>
+          l === existente ? { ...l, cantidad: l.cantidad + 1 } : l,
+        );
+      }
+      return [
+        ...prev,
+        {
+          key: nuevaClave(p.id),
+          esLibre: false,
+          productoId: p.id,
+          nombre: p.nombre,
+          marca: p.marca,
+          cantidad: 1,
+          precio: toNum(p.precio_venta),
+        },
+      ];
+    });
+    setQuery("");
+    setResultados([]);
+  };
 
   const subtotal = useMemo(
     () => lines.reduce((acc, l) => acc + l.precio * l.cantidad, 0),
@@ -228,6 +288,60 @@ export function EditarVentaModal({
               <p className="py-4 text-center text-sm text-ink-faint">
                 No quedan líneas. Agrega al menos una para poder guardar.
               </p>
+            ) : null}
+          </div>
+
+          {/* Agregar producto */}
+          <div className="relative">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Agregar producto (nombre o código)…"
+              className="w-full rounded-lg border border-line bg-white py-2 pl-9 pr-3 text-sm focus:border-accent focus:shadow-focus focus:outline-none"
+            />
+            {query.trim().length >= 2 ? (
+              <div className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-line bg-white shadow-card">
+                {buscando ? (
+                  <p className="px-3 py-3 text-center text-xs text-ink-faint">
+                    Buscando…
+                  </p>
+                ) : resultados.length === 0 ? (
+                  <p className="px-3 py-3 text-center text-xs text-ink-faint">
+                    Sin resultados
+                  </p>
+                ) : (
+                  resultados.map((p) => {
+                    const agotado = p.estado === "agotado";
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        disabled={agotado}
+                        onClick={() => agregarProducto(p)}
+                        className="flex w-full items-center justify-between gap-2 border-b border-line/60 px-3 py-2 text-left last:border-0 hover:bg-paper/60 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <span>
+                          <span className="block text-sm font-medium text-ink">
+                            {p.nombre}
+                          </span>
+                          <span className="block text-xs text-ink-faint">
+                            {p.marca} · Stock {p.stock}
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-2 text-sm tabular-nums text-ink-soft">
+                          {formatMoney(p.precio_venta)}
+                          <Plus size={15} className="text-accent" />
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             ) : null}
           </div>
 
