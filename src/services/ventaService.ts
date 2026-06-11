@@ -83,6 +83,31 @@ export async function createVenta(payload: VentaPayload): Promise<Venta> {
   }
 }
 
+/** Plazo (en días) durante el cual una venta puede modificarse. */
+export const VENTA_EDIT_DIAS = 3;
+
+/** True si la venta aún puede modificarse (no anulada y dentro del plazo). */
+export function esVentaEditable(fecha: string, anulada: boolean): boolean {
+  if (anulada) return false;
+  const creada = new Date(fecha).getTime();
+  if (Number.isNaN(creada)) return false;
+  const dias = (Date.now() - creada) / (1000 * 60 * 60 * 24);
+  return dias <= VENTA_EDIT_DIAS;
+}
+
+/** Modifica una venta existente (dentro del plazo). Devuelve la venta editada. */
+export async function editarVenta(
+  id: number,
+  payload: VentaPayload,
+): Promise<Venta> {
+  try {
+    const { data } = await axiosClient.put<Venta>(`/ventas/${id}`, payload);
+    return data;
+  } catch (error) {
+    throw new Error(resolveAxiosError(error, "No se pudo modificar la venta"));
+  }
+}
+
 /** Obtiene el detalle de una venta. */
 export async function getVenta(id: number): Promise<Venta> {
   const { data } = await axiosClient.get<Venta>(`/historial/${id}`);

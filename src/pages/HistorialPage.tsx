@@ -22,6 +22,7 @@ import {
 import { HistorialTable } from "@/components/historial/HistorialTable";
 import { HistorialStats } from "@/components/historial/HistorialStats";
 import { DetalleVentaModal } from "@/components/historial/DetalleVentaModal";
+import { EditarVentaModal } from "@/components/historial/EditarVentaModal";
 import { BoletaModal } from "@/components/historial/BoletaModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -57,6 +58,7 @@ export function HistorialPage() {
   const [boletaId, setBoletaId] = useState<number | null>(null);
   const [boletaPrecargada, setBoletaPrecargada] = useState<Venta | null>(null);
   const [anulando, setAnulando] = useState<HistorialItem | null>(null);
+  const [editandoId, setEditandoId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(
@@ -107,6 +109,7 @@ export function HistorialPage() {
     setBoletaId(item.id);
   }, []);
   const handleAnular = useCallback((item: HistorialItem) => setAnulando(item), []);
+  const handleEditar = useCallback((item: HistorialItem) => setEditandoId(item.id), []);
 
   const confirmarAnular = async () => {
     if (!anulando) return;
@@ -182,6 +185,7 @@ export function HistorialPage() {
           onVerBoleta={handleVerBoleta}
           onReimprimir={handleReimprimir}
           onAnular={handleAnular}
+          onEditar={handleEditar}
         />
       )}
 
@@ -200,6 +204,13 @@ export function HistorialPage() {
           setBoletaId(null);
           setBoletaPrecargada(null);
         }}
+      />
+
+      <EditarVentaModal
+        open={editandoId !== null}
+        ventaId={editandoId}
+        onClose={() => setEditandoId(null)}
+        onSaved={() => load(debouncedSearch, fechas, page)}
       />
 
       <ConfirmModal

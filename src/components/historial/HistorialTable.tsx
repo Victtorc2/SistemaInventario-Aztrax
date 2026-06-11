@@ -10,11 +10,12 @@
  */
 
 import { memo, useCallback } from "react";
-import { Ban, Eye, FileText, Printer } from "lucide-react";
+import { Ban, Eye, FileText, Pencil, Printer } from "lucide-react";
 import { formatMoney, formatDate } from "@/utils/format";
 import { ActionIcon } from "@/components/ui/ActionIcon";
 import { Pagination } from "@/components/ui/Pagination";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
+import { esVentaEditable } from "@/services/ventaService";
 import type { HistorialItem } from "@/types/historial";
 
 interface HistorialTableProps {
@@ -28,6 +29,7 @@ interface HistorialTableProps {
   onVerBoleta: (item: HistorialItem) => void;
   onReimprimir: (item: HistorialItem) => void;
   onAnular: (item: HistorialItem) => void;
+  onEditar: (item: HistorialItem) => void;
 }
 
 function toNum(v: string | number): number {
@@ -46,6 +48,7 @@ export function HistorialTable({
   onVerBoleta,
   onReimprimir,
   onAnular,
+  onEditar,
 }: HistorialTableProps) {
   if (loading) {
     return <TableSkeleton rows={6} columns={7} />;
@@ -76,6 +79,7 @@ export function HistorialTable({
                   onVerBoleta={onVerBoleta}
                   onReimprimir={onReimprimir}
                   onAnular={onAnular}
+                  onEditar={onEditar}
                 />
               ))}
             </tbody>
@@ -100,6 +104,7 @@ interface HistorialRowProps {
   onVerBoleta: (item: HistorialItem) => void;
   onReimprimir: (item: HistorialItem) => void;
   onAnular: (item: HistorialItem) => void;
+  onEditar: (item: HistorialItem) => void;
 }
 
 const HistorialRow = memo(function HistorialRow({
@@ -108,6 +113,7 @@ const HistorialRow = memo(function HistorialRow({
   onVerBoleta,
   onReimprimir,
   onAnular,
+  onEditar,
 }: HistorialRowProps) {
   // useCallback estabiliza los handlers para que los hijos memoizados no
   // se vuelvan a renderizar si el item no ha cambiado.
@@ -115,8 +121,10 @@ const HistorialRow = memo(function HistorialRow({
   const handleBoleta = useCallback(() => onVerBoleta(item), [item, onVerBoleta]);
   const handleReimp = useCallback(() => onReimprimir(item), [item, onReimprimir]);
   const handleAnular = useCallback(() => onAnular(item), [item, onAnular]);
+  const handleEditar = useCallback(() => onEditar(item), [item, onEditar]);
 
   const descuento = toNum(item.descuento);
+  const editable = esVentaEditable(item.fecha, item.anulada);
 
   return (
     <tr
@@ -168,6 +176,11 @@ const HistorialRow = memo(function HistorialRow({
           <ActionIcon intent="print" label="Reimprimir" onClick={handleReimp}>
             <Printer size={16} />
           </ActionIcon>
+          {editable ? (
+            <ActionIcon intent="edit" label="Modificar venta" onClick={handleEditar}>
+              <Pencil size={16} />
+            </ActionIcon>
+          ) : null}
           {!item.anulada ? (
             <ActionIcon intent="delete" label="Anular venta" onClick={handleAnular}>
               <Ban size={16} />
