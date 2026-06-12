@@ -1,26 +1,35 @@
 /**
  * ExportButton: botón de exportación con menú desplegable.
  *
- * Estructura preparada para PDF, Excel y CSV. La exportación CSV se implementa
- * de forma funcional (genera el archivo en el navegador a partir de los datos
- * recibidos); PDF y Excel quedan como interfaz lista para conectar más
- * adelante (muestran un aviso vía `onUnavailable`).
+ * Soporta PDF, Excel y CSV de forma funcional (todo en el navegador, sin
+ * dependencias externas) reutilizando las utilidades de `utils/exportTable`:
+ *   - CSV / Excel (.xls): descargan un archivo a partir de las filas.
+ *   - PDF: abre el diálogo de impresión para "Guardar como PDF".
  *
- * Se mantiene reutilizable: recibe los datos y el nombre de archivo.
+ * Se mantiene reutilizable: recibe los datos, el nombre de archivo y un título
+ * opcional para el encabezado del PDF.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { Download, FileText, FileSpreadsheet, FileDown } from "lucide-react";
+import {
+  exportCsv,
+  exportExcel,
+  exportPdf,
+  type ExportRow,
+} from "@/utils/exportTable";
 
 export type ExportFormat = "pdf" | "excel" | "csv";
 
 interface ExportButtonProps {
   /** Filas a exportar (clave -> valor). */
-  rows: Record<string, string | number>[];
+  rows: ExportRow[];
   /** Cabeceras en orden; si se omite, se toman las claves de la primera fila. */
   headers?: string[];
   filename?: string;
-  /** Aviso cuando un formato aún no está disponible (PDF/Excel). */
+  /** Título para el encabezado del PDF (por defecto, el filename). */
+  title?: string;
+  /** Aviso cuando un formato no se puede generar (p. ej. popup bloqueado). */
   onUnavailable?: (format: ExportFormat) => void;
   disabled?: boolean;
 }
@@ -29,6 +38,7 @@ export function ExportButton({
   rows,
   headers,
   filename = "export",
+  title,
   onUnavailable,
   disabled = false,
 }: ExportButtonProps) {
@@ -46,36 +56,15 @@ export function ExportButton({
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  /** Exporta a CSV (funcional, en cliente). */
-  const exportCsv = () => {
-    const cols = headers ?? (rows[0] ? Object.keys(rows[0]) : []);
-    const escape = (v: string | number) => {
-      const s = String(v ?? "");
-      // Entrecomillar si hay comas, comillas o saltos de línea.
-      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    const lines = [
-      cols.join(","),
-      ...rows.map((r) => cols.map((c) => escape(r[c])).join(",")),
-    ];
-    const blob = new Blob([lines.join("\n")], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${filename}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const handleSelect = (format: ExportFormat) => {
     setOpen(false);
     if (format === "csv") {
-      exportCsv();
+      exportCsv(rows, filename, headers);
+    } else if (format === "excel") {
+      exportExcel(rows, filename, headers);
     } else {
-      // PDF / Excel: interfaz lista, implementación futura.
-      onUnavailable?.(format);
+      const ok = exportPdf(rows, filename, { title: title ?? filename, headers });
+      if (!ok) onUnavailable?.(format);
     }
   };
 

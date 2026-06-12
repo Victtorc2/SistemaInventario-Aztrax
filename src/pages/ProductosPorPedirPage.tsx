@@ -3,8 +3,7 @@
  *
  * Lista los productos agotados o con bajo stock (orden del backend: agotados
  * primero). Permite filtrar por estado (todos/agotados/bajo stock), buscar por
- * nombre o código (debounce) y exportar la lista (CSV funcional; PDF/Excel con
- * interfaz preparada).
+ * nombre o código (debounce) y exportar la lista a CSV, Excel (.xls) o PDF.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -56,6 +55,7 @@ export function ProductosPorPedirPage() {
   const exportRows = items.map((p) => ({
     Código: p.codigo,
     Producto: p.nombre,
+    Modelo: p.modelo ?? "—",
     Proveedor: p.proveedor,
     Stock: p.stock,
     "Stock mínimo": p.stock_minimo,
@@ -63,7 +63,9 @@ export function ProductosPorPedirPage() {
   }));
 
   const handleUnavailable = (format: ExportFormat) => {
-    toast.info(`La exportación a ${format.toUpperCase()} estará disponible pronto.`);
+    toast.error(
+      `No se pudo generar el ${format.toUpperCase()}. Permite las ventanas emergentes e inténtalo de nuevo.`,
+    );
   };
 
   return (
@@ -76,6 +78,7 @@ export function ProductosPorPedirPage() {
           <ExportButton
             rows={exportRows}
             filename="productos_por_pedir"
+            title="Productos por pedir"
             onUnavailable={handleUnavailable}
             disabled={items.length === 0}
           />
