@@ -167,6 +167,7 @@ export function ProductosPage() {
     <PageContainer
       title="Productos"
       subtitle="Administra el inventario del negocio"
+      wide
       actions={
         <>
           <SearchProducto value={search} onChange={setSearch} />

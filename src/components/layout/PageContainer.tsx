@@ -12,6 +12,8 @@ interface PageContainerProps {
   subtitle?: string;
   /** Acciones alineadas a la derecha del encabezado (botones, buscador...). */
   actions?: ReactNode;
+  /** Ancho extendido para páginas con tablas amplias (ej. inventario). */
+  wide?: boolean;
   children: ReactNode;
 }
 
@@ -19,10 +21,11 @@ export function PageContainer({
   title,
   subtitle,
   actions,
+  wide = false,
   children,
 }: PageContainerProps) {
   return (
-    <div className="mx-auto w-full max-w-6xl animate-fade-up">
+    <div className={`mx-auto w-full animate-fade-up ${wide ? "max-w-[1600px]" : "max-w-6xl"}`}>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
