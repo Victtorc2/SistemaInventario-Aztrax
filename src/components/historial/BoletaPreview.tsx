@@ -105,11 +105,13 @@ export const BoletaPreview = forwardRef<HTMLDivElement, BoletaPreviewProps>(
         <Divider />
 
         {/* Items */}
-        {venta.detalles.map((d) => (
+        {venta.detalles.map((d) => {
+          const detalles = [d.marca, d.modelo, d.color].filter(Boolean).join(" / ");
+          return (
           <div key={d.id} className="mb-1.5">
-            <p className="truncate">
+            <p>
               {d.producto}
-              {d.marca ? ` - ${d.marca}` : ""}
+              {detalles ? ` - ${detalles}` : ""}
             </p>
             <div className="flex justify-between">
               <span>
@@ -118,7 +120,8 @@ export const BoletaPreview = forwardRef<HTMLDivElement, BoletaPreviewProps>(
               <span>{formatMoney(toNum(d.subtotal))}</span>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         <Divider />
 

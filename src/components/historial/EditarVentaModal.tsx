@@ -36,6 +36,8 @@ interface EditableLine {
   productoId: number | null;
   nombre: string;
   marca: string;
+  modelo: string | null;
+  color: string | null;
   cantidad: number;
   precio: number;
 }
@@ -88,6 +90,8 @@ export function EditarVentaModal({
             productoId: d.producto_id,
             nombre: d.producto,
             marca: d.marca,
+            modelo: d.modelo,
+            color: d.color,
             cantidad: d.cantidad,
             precio: toNum(d.precio),
           })),
@@ -142,6 +146,8 @@ export function EditarVentaModal({
           productoId: p.id,
           nombre: p.nombre,
           marca: p.marca,
+          modelo: p.modelo,
+          color: p.color,
           cantidad: 1,
           precio: toNum(p.precio_venta),
         },
@@ -236,7 +242,9 @@ export function EditarVentaModal({
                 <div className="min-w-[120px] flex-1">
                   <p className="text-sm font-medium text-ink">{l.nombre}</p>
                   <p className="text-xs text-ink-faint">
-                    {l.esLibre ? "Línea libre" : l.marca}
+                    {l.esLibre
+                      ? "Línea libre"
+                      : [l.marca, l.modelo, l.color].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <div>
@@ -330,7 +338,7 @@ export function EditarVentaModal({
                             {p.nombre}
                           </span>
                           <span className="block text-xs text-ink-faint">
-                            {p.marca} · Stock {p.stock}
+                            {[p.marca, p.modelo, p.color].filter(Boolean).join(" · ")} · Stock {p.stock}
                           </span>
                         </span>
                         <span className="flex items-center gap-2 text-sm tabular-nums text-ink-soft">

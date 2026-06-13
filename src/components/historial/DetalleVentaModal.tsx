@@ -107,7 +107,11 @@ export function DetalleVentaModal({
                   <tr key={d.id} className="border-b border-line/60 last:border-0">
                     <td className="px-3 py-2">
                       <p className="font-medium text-ink">{d.producto}</p>
-                      <p className="text-xs text-ink-faint">{d.marca}</p>
+                      {(d.marca || d.modelo || d.color) && (
+                        <p className="text-xs text-ink-faint">
+                          {[d.marca, d.modelo, d.color].filter(Boolean).join(" · ")}
+                        </p>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-center tabular-nums">
                       {d.cantidad}

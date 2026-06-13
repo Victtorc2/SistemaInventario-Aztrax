@@ -46,6 +46,8 @@ export interface VentaDetalle {
   producto_id: number | null;
   producto: string; // nombre del producto o descripción de la línea libre
   marca: string;
+  modelo: string | null;
+  color: string | null;
   codigo: string;
   // true si es una línea escrita a mano (sin producto registrado).
   es_libre: boolean;
