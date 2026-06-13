@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SearchProductoVenta } from "@/components/ventas/SearchProductoVenta";
 import { ProductoVentaTable } from "@/components/ventas/ProductoVentaTable";
@@ -31,6 +31,9 @@ import type { Producto } from "@/types/producto";
 import { cartItemKey, type CartItem } from "@/types/cart";
 import type { Cliente } from "@/types/cliente";
 
+const SELECT_CLS =
+  "rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-soft transition-all focus:border-accent focus:shadow-focus focus:outline-none disabled:cursor-not-allowed disabled:bg-paper/60 disabled:text-ink-faint";
+
 export function VentasPage() {
   const toast = useToast();
   const cart = useCart();
@@ -40,6 +43,48 @@ export function VentasPage() {
   const debouncedSearch = useDebounce(search, 350);
   const [resultados, setResultados] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // --- Filtros por marca y modelo (aplicados en cliente sobre los resultados) ---
+  const [marcaFilter, setMarcaFilter] = useState("");
+  const [modeloFilter, setModeloFilter] = useState("");
+
+  // Marcas y modelos disponibles según los resultados actuales.
+  const marcasDisponibles = useMemo(() => {
+    const set = new Set<string>();
+    resultados.forEach((p) => { if (p.marca) set.add(p.marca); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "es"));
+  }, [resultados]);
+
+  const modelosDisponibles = useMemo(() => {
+    const set = new Set<string>();
+    resultados.forEach((p) => {
+      if (p.modelo && (!marcaFilter || p.marca === marcaFilter)) set.add(p.modelo);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "es"));
+  }, [resultados, marcaFilter]);
+
+  const productosFiltrados = useMemo(
+    () =>
+      resultados.filter(
+        (p) =>
+          (!marcaFilter || p.marca === marcaFilter) &&
+          (!modeloFilter || p.modelo === modeloFilter),
+      ),
+    [resultados, marcaFilter, modeloFilter],
+  );
+
+  // Si los filtros dejan de existir al cambiar los resultados, se limpian.
+  useEffect(() => {
+    if (marcaFilter && !marcasDisponibles.includes(marcaFilter)) {
+      setMarcaFilter("");
+      setModeloFilter("");
+    }
+  }, [marcasDisponibles, marcaFilter]);
+  useEffect(() => {
+    if (modeloFilter && !modelosDisponibles.includes(modeloFilter)) {
+      setModeloFilter("");
+    }
+  }, [modelosDisponibles, modeloFilter]);
 
   // --- Clientes (para ventas al crédito) ---
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -212,8 +257,49 @@ export function VentasPage() {
               Línea libre
             </Button>
           </div>
+
+          {/* Filtros por marca y modelo */}
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-white p-3 shadow-card">
+            <select
+              className={SELECT_CLS}
+              value={marcaFilter}
+              onChange={(e) => { setMarcaFilter(e.target.value); setModeloFilter(""); }}
+              aria-label="Filtrar por marca"
+            >
+              <option value="">Todas las marcas</option>
+              {marcasDisponibles.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <select
+              className={SELECT_CLS}
+              value={modeloFilter}
+              onChange={(e) => setModeloFilter(e.target.value)}
+              aria-label="Filtrar por modelo"
+              disabled={modelosDisponibles.length === 0}
+            >
+              <option value="">Todos los modelos</option>
+              {modelosDisponibles.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            {(marcaFilter || modeloFilter) ? (
+              <button
+                type="button"
+                onClick={() => { setMarcaFilter(""); setModeloFilter(""); }}
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-ink-faint transition-colors hover:bg-line/60 hover:text-ink"
+              >
+                <X size={14} />
+                Limpiar
+              </button>
+            ) : null}
+            <span className="ml-auto text-xs text-ink-faint">
+              {productosFiltrados.length} producto{productosFiltrados.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
           <ProductoVentaTable
-            productos={resultados}
+            productos={productosFiltrados}
             loading={loading}
             onAdd={handleAdd}
           />
