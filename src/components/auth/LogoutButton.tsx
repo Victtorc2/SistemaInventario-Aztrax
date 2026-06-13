@@ -10,9 +10,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface LogoutButtonProps {
   className?: string;
+  /** "light" (por defecto) o "dark" para el sidebar oscuro. */
+  tone?: "light" | "dark";
 }
 
-export function LogoutButton({ className = "" }: LogoutButtonProps) {
+export function LogoutButton({ className = "", tone = "light" }: LogoutButtonProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -21,14 +23,19 @@ export function LogoutButton({ className = "" }: LogoutButtonProps) {
     navigate("/login", { replace: true });
   };
 
+  const toneCls =
+    tone === "dark"
+      ? "text-slate-300 hover:bg-white/10 hover:text-white"
+      : "text-ink-soft hover:bg-line/60 hover:text-ink";
+
   return (
     <button
       type="button"
       onClick={handleLogout}
       className={[
         "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
-        "text-ink-soft transition-colors hover:bg-line/60 hover:text-ink",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+        toneCls,
+        "transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
         className,
       ].join(" ")}
     >

@@ -37,7 +37,7 @@ export function DownloadButton({ ventaId, numeroBoleta }: DownloadButtonProps) {
       type="button"
       onClick={handleDownload}
       disabled={loading}
-      className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-deep disabled:cursor-not-allowed disabled:opacity-60"
     >
       {loading ? <Loader size={16} /> : <Download size={16} />}
       Descargar PDF

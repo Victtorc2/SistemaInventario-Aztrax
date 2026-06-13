@@ -21,9 +21,16 @@ export default {
         paper: "#f6f7f9", // gris muy claro y frío
         line: "#e6e9ef", // borde frío suave
         accent: {
-          DEFAULT: "#4f46e5", // indigo-600: botones primarios, activos
-          soft: "#eef2ff", // indigo-50: fondos suaves del acento
-          ring: "#4f46e5",
+          DEFAULT: "#7c6cff", // violeta brillante: botones primarios, activos
+          deep: "#6a5af0", // violeta más profundo para hover/active
+          soft: "#f0eefe", // violeta muy claro: fondos suaves del acento
+          ring: "#7c6cff",
+        },
+        // Tonos del sidebar oscuro ("Midnight").
+        midnight: {
+          DEFAULT: "#0b1020", // fondo del sidebar (slate casi negro)
+          soft: "#151b30", // superficies sutiles dentro del sidebar
+          line: "#222a44", // bordes dentro del sidebar
         },
         // Familia semántica para identificar acciones por color (icon chips,
         // botones y badges). Cada acción tiene un color consistente.
@@ -37,7 +44,7 @@ export default {
       boxShadow: {
         // Sombras frías neutras, nítidas y discretas.
         card: "0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -12px rgba(15,23,42,0.12)",
-        focus: "0 0 0 3px rgba(79,70,229,0.15)",
+        focus: "0 0 0 3px rgba(124,108,255,0.18)",
       },
       borderRadius: {
         xl2: "1rem",

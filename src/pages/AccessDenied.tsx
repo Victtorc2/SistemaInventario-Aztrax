@@ -20,7 +20,7 @@ export function AccessDenied() {
         </p>
         <Link
           to="/login"
-          className="mt-6 inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+          className="mt-6 inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
         >
           Volver a iniciar sesión
         </Link>

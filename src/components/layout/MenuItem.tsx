@@ -22,10 +22,10 @@ export function MenuItem({ to, label, icon: Icon, onNavigate }: MenuItemProps) {
       onClick={onNavigate}
       className={({ isActive }) =>
         [
-          "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
           isActive
-            ? "bg-accent text-white"
-            : "text-ink-soft hover:bg-line/60 hover:text-ink",
+            ? "bg-accent text-white shadow-[0_8px_20px_-8px_rgba(124,108,255,0.8)]"
+            : "text-slate-300 hover:bg-white/10 hover:text-white",
         ].join(" ")
       }
     >
@@ -34,7 +34,7 @@ export function MenuItem({ to, label, icon: Icon, onNavigate }: MenuItemProps) {
           <Icon
             size={18}
             strokeWidth={2}
-            className={isActive ? "text-white" : "text-ink-faint group-hover:text-ink"}
+            className={isActive ? "text-white" : "text-slate-400 group-hover:text-white"}
           />
           <span className="truncate">{label}</span>
         </>

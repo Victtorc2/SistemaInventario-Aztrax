@@ -36,21 +36,21 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-line bg-white",
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-midnight-line bg-midnight text-slate-300",
           "transition-transform duration-300 ease-out md:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-white shadow-[0_8px_20px_-6px_rgba(124,108,255,0.7)]">
             <Boxes size={19} strokeWidth={2} />
           </div>
           <div>
-            <p className="text-sm font-semibold leading-tight tracking-tight">
+            <p className="text-sm font-semibold leading-tight tracking-tight text-white">
               Sistema Inventario
             </p>
-            <p className="text-xs text-ink-faint">Administración</p>
+            <p className="text-xs text-slate-400">Administración</p>
           </div>
         </div>
 
@@ -68,21 +68,21 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer: usuario + logout */}
-        <div className="border-t border-line p-3">
-          <div className="mb-2 flex items-center gap-3 rounded-lg px-2 py-2">
+        <div className="border-t border-midnight-line p-3">
+          <div className="mb-2 flex items-center gap-3 rounded-xl bg-midnight-soft px-2 py-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">
               {initial}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium leading-none">
+              <p className="truncate text-sm font-medium leading-none text-white">
                 {user?.nombre ?? "Usuario"}
               </p>
-              <p className="mt-0.5 truncate text-xs text-ink-faint">
+              <p className="mt-0.5 truncate text-xs text-slate-400">
                 {user?.correo ?? ""}
               </p>
             </div>
           </div>
-          <LogoutButton className="w-full justify-start" />
+          <LogoutButton className="w-full justify-start" tone="dark" />
         </div>
       </aside>
     </>

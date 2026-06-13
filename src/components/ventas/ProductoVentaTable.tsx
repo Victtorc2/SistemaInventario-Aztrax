@@ -123,7 +123,7 @@ export function ProductoVentaTable({
                       type="button"
                       onClick={() => onAdd(p)}
                       disabled={agotado}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all duration-200 hover:bg-indigo-600 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:bg-line disabled:text-ink-faint disabled:active:scale-100"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all duration-200 hover:bg-accent-deep active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:bg-line disabled:text-ink-faint disabled:active:scale-100"
                       aria-label={`Agregar ${p.nombre}`}
                     >
                       <Plus size={14} />
