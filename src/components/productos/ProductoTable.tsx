@@ -1,8 +1,8 @@
 /**
  * ProductoTable: listado del inventario.
  *
- * Columnas: código, nombre, marca, categoría, proveedor, precio compra,
- * precio venta, stock, estado (badge) y acciones. Tiene scroll horizontal en
+ * Columnas: código, nombre, marca, modelo, color, categoría, proveedor,
+ * precio compra, precio venta, stock, estado (badge) y acciones. Tiene scroll horizontal en
  * pantallas estrechas. Maneja loading (skeleton) y paginación de 10; el estado
  * vacío lo decide la página (EmptyProducts).
  */
@@ -49,12 +49,14 @@ export function ProductoTable({
     <div>
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-sm">
+          <table className="w-full min-w-[1080px] text-left text-sm">
             <thead className="bg-paper/50">
               <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
                 <th className="px-4 py-3 font-medium">Código</th>
                 <th className="px-4 py-3 font-medium">Nombre</th>
                 <th className="px-4 py-3 font-medium">Marca</th>
+                <th className="px-4 py-3 font-medium">Modelo</th>
+                <th className="px-4 py-3 font-medium">Color</th>
                 <th className="px-4 py-3 font-medium">Categoría</th>
                 <th className="px-4 py-3 font-medium">Proveedor</th>
                 <th className="px-4 py-3 text-right font-medium">P. compra</th>
@@ -68,7 +70,7 @@ export function ProductoTable({
               {loading
                 ? Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i} className="border-b border-line/60 last:border-0">
-                      {Array.from({ length: 10 }).map((__, j) => (
+                      {Array.from({ length: 12 }).map((__, j) => (
                         <td key={j} className="px-4 py-4">
                           <div className="h-3.5 w-16 animate-pulse rounded bg-line" />
                         </td>
@@ -96,11 +98,16 @@ export function ProductoTable({
                           ) : null}
                         </div>
                         <div className="text-xs font-normal text-ink-faint">
-                          {p.modelo ? `${p.modelo} · ` : ""}
                           {representacionLabel(p.representacion)}
                         </div>
                       </td>
                       <td className="px-4 py-4 text-ink-soft">{p.marca}</td>
+                      <td className="px-4 py-4 text-ink-soft">
+                        {p.modelo || <span className="text-ink-faint">—</span>}
+                      </td>
+                      <td className="px-4 py-4 text-ink-soft">
+                        {p.color || <span className="text-ink-faint">—</span>}
+                      </td>
                       <td className="px-4 py-4 text-ink-soft">{p.categoria}</td>
                       <td className="px-4 py-4 text-ink-soft">{p.proveedor}</td>
                       <td className="px-4 py-4 text-right tabular-nums text-ink-soft">

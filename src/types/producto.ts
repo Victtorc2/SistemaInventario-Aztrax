@@ -53,6 +53,7 @@ export interface Producto {
   nombre: string;
   marca: string;
   modelo: string | null;
+  color: string | null;
   categoria: string;
   proveedor: string;
   precio_compra: string | number;
@@ -74,6 +75,7 @@ export interface ProductoPayload {
   nombre: string;
   marca: string;
   modelo?: string | null;
+  color?: string | null;
   categoria_id: number;
   proveedor_id: number;
   precio_compra: number;

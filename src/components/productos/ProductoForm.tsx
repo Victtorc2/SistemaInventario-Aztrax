@@ -46,6 +46,7 @@ const productoSchema = z.object({
   nombre: z.string().trim().min(1, "Campo requerido").max(150, "Máximo 150 caracteres"),
   marca: z.string().trim().min(1, "Campo requerido").max(100, "Máximo 100 caracteres"),
   modelo: z.string().trim().max(100, "Máximo 100 caracteres").optional(),
+  color: z.string().trim().max(100, "Máximo 100 caracteres").optional(),
   categoria_id: z.preprocess(toNumber, z.number({ invalid_type_error: "Campo requerido" }).int().positive("Campo requerido")),
   proveedor_id: z.preprocess(toNumber, z.number({ invalid_type_error: "Campo requerido" }).int().positive("Campo requerido")),
   precio_compra: z.preprocess(toNumber, z.number({ invalid_type_error: "Precio inválido" }).positive("Precio inválido")),
@@ -66,6 +67,7 @@ interface ProductoFormFields {
   nombre: string;
   marca: string;
   modelo: string;
+  color: string;
   categoria_id: string;
   proveedor_id: string;
   precio_compra: string;
@@ -110,6 +112,7 @@ export function ProductoForm({
       nombre: defaultValues?.nombre ?? "",
       marca: defaultValues?.marca ?? "",
       modelo: defaultValues?.modelo ?? "",
+      color: defaultValues?.color ?? "",
       categoria_id: initialCategoriaId !== undefined ? String(initialCategoriaId) : "",
       proveedor_id: initialProveedorId !== undefined ? String(initialProveedorId) : "",
       precio_compra:
@@ -136,6 +139,7 @@ export function ProductoForm({
       nombre: out.nombre,
       marca: out.marca,
       modelo: out.modelo && out.modelo.trim() ? out.modelo.trim() : null,
+      color: out.color && out.color.trim() ? out.color.trim() : null,
       categoria_id: out.categoria_id,
       proveedor_id: out.proveedor_id,
       precio_compra: out.precio_compra,
@@ -167,10 +171,19 @@ export function ProductoForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <InputField
           label="Modelo (opcional)"
-          placeholder="Ej. Botella retornable / Pavilion 15"
+          placeholder="Ej. X-Rap / Tournament"
           error={errors.modelo?.message}
           {...register("modelo")}
         />
+        <InputField
+          label="Color (opcional)"
+          placeholder="Ej. Verde fluor"
+          error={errors.color?.message}
+          {...register("color")}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Representación"
           hint="Cómo se vende: por unidad, sobre, caja, etc."
