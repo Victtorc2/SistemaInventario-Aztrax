@@ -24,8 +24,9 @@ function lineInfo(item: CartItem): { nombre: string; sub: string } {
   if (item.kind === "libre") {
     return { nombre: item.descripcion, sub: "Venta libre" };
   }
-  const modelo = item.producto.modelo ? ` / ${item.producto.modelo}` : "";
-  return { nombre: item.producto.nombre, sub: `${item.producto.marca}${modelo}` };
+  const { marca, modelo, color, nombre } = item.producto;
+  const sub = [marca, modelo, color].filter(Boolean).join(" / ");
+  return { nombre, sub };
 }
 
 export function CarritoTable({

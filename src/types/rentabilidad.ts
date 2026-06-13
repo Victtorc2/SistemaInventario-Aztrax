@@ -11,6 +11,8 @@ export interface RentabilidadProducto {
   codigo: string;
   nombre: string;
   marca: string;
+  modelo: string | null;
+  color: string | null;
   unidades_vendidas: number;
   ingresos: Money;
   costo: Money;

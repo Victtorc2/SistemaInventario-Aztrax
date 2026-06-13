@@ -1,7 +1,7 @@
 /**
  * ProductoVentaTable: resultados de búsqueda de productos para agregar.
  *
- * Columnas: código, producto, marca, precio, stock, estado y acción "Agregar".
+ * Columnas: código, producto, marca, modelo, color, precio, stock, estado y acción "Agregar".
  * El botón Agregar se deshabilita si el producto está agotado. Maneja loading
  * (skeleton) y estado sin resultados.
  */
@@ -75,6 +75,7 @@ export function ProductoVentaTable({
                 <th className="px-4 py-3 font-medium">Producto</th>
                 <th className="hidden px-4 py-3 font-medium md:table-cell">Marca</th>
                 <th className="hidden px-4 py-3 font-medium lg:table-cell">Modelo</th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">Color</th>
                 <th className="px-4 py-3 text-right font-medium">Precio</th>
                 <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Stock</th>
                 <th className="hidden px-4 py-3 font-medium lg:table-cell">Estado</th>
@@ -97,12 +98,16 @@ export function ProductoVentaTable({
                     {/* En móvil, marca, modelo y stock van como subtexto (esas columnas se ocultan). */}
                     <span className="mt-0.5 block text-xs font-normal text-ink-faint md:hidden">
                       {p.marca}
-                      {p.modelo ? ` / ${p.modelo}` : ""} · Stock: {p.stock}
+                      {p.modelo ? ` / ${p.modelo}` : ""}
+                      {p.color ? ` / ${p.color}` : ""} · Stock: {p.stock}
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 text-ink-soft md:table-cell">{p.marca}</td>
                   <td className="hidden px-4 py-3 text-ink-soft lg:table-cell">
                     {p.modelo || "—"}
+                  </td>
+                  <td className="hidden px-4 py-3 text-ink-soft lg:table-cell">
+                    {p.color || "—"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-ink-soft">
                     {formatMoney(p.precio_venta)}

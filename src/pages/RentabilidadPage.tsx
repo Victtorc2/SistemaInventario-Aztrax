@@ -308,7 +308,9 @@ function RentabilidadPorProducto({ data }: { data: ReporteRentabilidad }) {
                 <td className="px-5 py-4">
                   <p className="font-medium text-ink">{p.nombre}</p>
                   <p className="text-xs text-ink-faint">
-                    {p.producto_id === null ? "Productos no registrados" : p.marca}
+                    {p.producto_id === null
+                      ? "Productos no registrados"
+                      : [p.marca, p.modelo, p.color].filter(Boolean).join(" · ")}
                   </p>
                 </td>
                 <td className="px-5 py-4 text-center tabular-nums text-ink-soft">

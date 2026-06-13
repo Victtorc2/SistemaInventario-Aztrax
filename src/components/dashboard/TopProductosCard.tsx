@@ -69,6 +69,11 @@ export function TopProductosCard({ data }: TopProductosCardProps) {
                       {formatMoney(monto)}
                     </p>
                   </div>
+                  {(p.marca || p.modelo || p.color) && (
+                    <p className="truncate text-xs text-ink-faint">
+                      {[p.marca, p.modelo, p.color].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                   <div className="mt-1 flex items-center gap-2">
                     <div className="h-1 flex-1 overflow-hidden rounded-full bg-line">
                       <div

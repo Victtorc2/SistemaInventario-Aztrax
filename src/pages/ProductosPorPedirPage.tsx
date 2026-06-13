@@ -56,6 +56,7 @@ export function ProductosPorPedirPage() {
     Código: p.codigo,
     Producto: p.nombre,
     Modelo: p.modelo ?? "—",
+    Color: p.color ?? "—",
     Proveedor: p.proveedor,
     Stock: p.stock,
     "Stock mínimo": p.stock_minimo,

@@ -1,9 +1,9 @@
 /**
  * ReposicionTable: listado de productos por pedir.
  *
- * Columnas: código, producto, modelo, proveedor, stock, stock mínimo y estado
- * (el backend de reposición devuelve código, nombre, modelo, stock,
- * stock_minimo, estado, categoría y proveedor). El orden lo define el backend
+ * Columnas: código, producto, modelo, color, proveedor, stock, stock mínimo y
+ * estado (el backend de reposición devuelve código, nombre, modelo, color,
+ * stock, stock_minimo, estado, categoría y proveedor). El orden lo define el backend
  * (agotados primero). Maneja loading (skeleton) y vacío.
  */
 
@@ -65,12 +65,13 @@ export function ReposicionTable({ items, loading }: ReposicionTableProps) {
     <div>
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-left text-sm">
+          <table className="w-full min-w-[920px] text-left text-sm">
             <thead className="bg-paper/50">
               <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
                 <th className="px-5 py-3 font-medium">Código</th>
                 <th className="px-5 py-3 font-medium">Producto</th>
                 <th className="px-5 py-3 font-medium">Modelo</th>
+                <th className="px-5 py-3 font-medium">Color</th>
                 <th className="px-5 py-3 font-medium">Proveedor</th>
                 <th className="px-5 py-3 text-right font-medium">Stock</th>
                 <th className="px-5 py-3 text-right font-medium">Stock mínimo</th>
@@ -90,6 +91,13 @@ export function ReposicionTable({ items, loading }: ReposicionTableProps) {
                   <td className="px-5 py-4 text-ink-soft">
                     {p.modelo ? (
                       p.modelo
+                    ) : (
+                      <span className="text-ink-faint">—</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4 text-ink-soft">
+                    {p.color ? (
+                      p.color
                     ) : (
                       <span className="text-ink-faint">—</span>
                     )}

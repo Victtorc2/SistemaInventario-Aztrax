@@ -14,6 +14,7 @@ export interface ProductoPorPedir {
   codigo: string;
   nombre: string;
   modelo: string | null;
+  color: string | null;
   stock: number;
   stock_minimo: number;
   estado: "agotado" | "bajo_stock";

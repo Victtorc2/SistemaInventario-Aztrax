@@ -39,6 +39,8 @@ export interface TopProducto {
   codigo: string;
   nombre: string;
   marca: string;
+  modelo: string | null;
+  color: string | null;
   unidades_vendidas: number;
   monto_vendido: Money;
 }
