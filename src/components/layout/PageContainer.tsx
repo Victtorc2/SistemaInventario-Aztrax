@@ -25,7 +25,7 @@ export function PageContainer({
   children,
 }: PageContainerProps) {
   return (
-    <div className={`mx-auto w-full animate-fade-up ${wide ? "max-w-[1600px]" : "max-w-6xl"}`}>
+    <div className={`mx-auto w-full animate-fade-up ${wide ? "max-w-[1320px]" : "max-w-6xl"}`}>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>

@@ -72,7 +72,7 @@ export function ProductoTable({
                 <th className="border-b border-line px-4 py-3 text-right font-semibold">P. venta</th>
                 <th className="border-b border-line px-4 py-3 text-right font-semibold">Stock</th>
                 <th className="border-b border-line px-4 py-3 font-semibold">Estado</th>
-                <th className="border-b border-line px-4 py-3 text-right font-semibold">Acciones</th>
+                <th className="border-b border-line px-2 py-3 text-right font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -96,7 +96,7 @@ export function ProductoTable({
                     >
                       {/* Producto: código (chip) + nombre (multilínea) + representación */}
                       <td className="border-b border-line/60 px-4 py-3.5">
-                        <div className="min-w-[220px] max-w-[340px]">
+                        <div className="min-w-[160px] max-w-[240px]">
                           <div className="mb-1 flex items-center gap-2">
                             <span className="rounded-md bg-line/70 px-1.5 py-0.5 font-mono text-[10px] text-ink-soft">
                               {p.codigo}
@@ -130,8 +130,8 @@ export function ProductoTable({
                       <td className="whitespace-nowrap border-b border-line/60 px-4 py-3.5">
                         <StockBadge estado={p.estado} />
                       </td>
-                      <td className="whitespace-nowrap border-b border-line/60 px-4 py-3.5">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="whitespace-nowrap border-b border-line/60 px-2 py-3.5">
+                        <div className="flex items-center justify-end gap-0.5">
                           <ActionIcon
                             intent="edit"
                             label={`Editar ${p.nombre}`}
