@@ -12,13 +12,16 @@ import { RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { SaldoDisponibleCard } from "@/components/dashboard/SaldoDisponibleCard";
 import { VentasChart } from "@/components/dashboard/VentasChart";
 import { MetodosPagoCard } from "@/components/dashboard/MetodosPagoCard";
 import { TopProductosCard } from "@/components/dashboard/TopProductosCard";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { getDashboard } from "@/services/dashboardService";
+import { getSaldo } from "@/services/gastoService";
 import { getErrorMessage } from "@/utils/errorHandler";
 import type { DashboardCompleto } from "@/types/dashboard";
+import type { Saldo } from "@/types/gasto";
 
 /** Días de historial mostrados en el gráfico de ventas. */
 const DIAS_PERIODO = 14;
@@ -26,6 +29,7 @@ const DIAS_PERIODO = 14;
 export function InicioPage() {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardCompleto | null>(null);
+  const [saldo, setSaldo] = useState<Saldo | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -39,7 +43,14 @@ export function InicioPage() {
       else setLoading(true);
       setError(null);
       try {
-        setData(await getDashboard(DIAS_PERIODO, 5));
+        // El saldo es secundario: si su endpoint falla (p. ej. backend sin
+        // migrar) no debe tumbar el dashboard, así que toleramos su error.
+        const [dash, sal] = await Promise.all([
+          getDashboard(DIAS_PERIODO, 5),
+          getSaldo().catch(() => null),
+        ]);
+        setData(dash);
+        setSaldo(sal);
         setLastUpdated(new Date());
       } catch (e) {
         setError(getErrorMessage(e, "No se pudo cargar el dashboard"));
@@ -117,6 +128,8 @@ export function InicioPage() {
           }`}
         >
           <DashboardStats resumen={data.resumen} />
+
+          <SaldoDisponibleCard saldo={saldo} />
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
             <VentasChart data={data.ventas_por_dia} />
