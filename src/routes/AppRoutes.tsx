@@ -49,6 +49,9 @@ const CajaPage = lazy(() =>
 const RentabilidadPage = lazy(() =>
   import("@/pages/RentabilidadPage").then((m) => ({ default: m.RentabilidadPage })),
 );
+const GastosPage = lazy(() =>
+  import("@/pages/GastosPage").then((m) => ({ default: m.GastosPage })),
+);
 const BoletaPreviewPage = lazy(() =>
   import("@/pages/BoletaPreviewPage").then((m) => ({
     default: m.BoletaPreviewPage,
@@ -87,6 +90,7 @@ export function AppRoutes() {
           <Route path="/ventas" element={lazyRoute(<VentasPage />)} />
           <Route path="/clientes" element={lazyRoute(<ClientesPage />)} />
           <Route path="/caja" element={lazyRoute(<CajaPage />)} />
+          <Route path="/gastos" element={lazyRoute(<GastosPage />)} />
           <Route path="/rentabilidad" element={lazyRoute(<RentabilidadPage />)} />
           <Route
             path="/productos-por-pedir"

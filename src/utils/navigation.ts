@@ -16,6 +16,7 @@ import {
   Users,
   LineChart,
   Wallet,
+  Receipt,
   type LucideIcon,
 } from "lucide-react";
 
@@ -36,6 +37,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/ventas", label: "Ventas", icon: ShoppingCart },
   { to: "/caja", label: "Caja diaria", icon: Wallet },
+  { to: "/gastos", label: "Gastos y saldo", icon: Receipt },
   { to: "/productos-por-pedir", label: "Productos por pedir", icon: AlertTriangle },
   { to: "/historial", label: "Historial", icon: History },
   { to: "/rentabilidad", label: "Rentabilidad", icon: LineChart },
