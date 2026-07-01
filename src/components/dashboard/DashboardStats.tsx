@@ -10,7 +10,7 @@
 import { Link } from "react-router-dom";
 import {
   ShoppingCart,
-  Wallet,
+  TrendingUp,
   Receipt,
   Boxes,
   AlertTriangle,
@@ -53,10 +53,12 @@ export function DashboardStats({ resumen }: DashboardStatsProps) {
       to: "/historial",
     },
     {
-      label: "Monto total",
+      // Facturación acumulada de ventas (histórico). NO es el dinero disponible:
+      // ese se ve en la tarjeta "Dinero disponible", que sí resta gastos.
+      label: "Total vendido",
       value: formatMoney(resumen.monto_total),
-      hint: `${resumen.ventas_total} ventas en total`,
-      icon: Wallet,
+      hint: `Facturado en ${resumen.ventas_total} ventas`,
+      icon: TrendingUp,
       tone: "emerald",
       to: "/historial",
     },
