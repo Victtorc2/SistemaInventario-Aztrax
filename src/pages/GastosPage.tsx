@@ -15,7 +15,10 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Banknote,
+  Pencil,
+  PlusCircle,
   RefreshCw,
+  Sliders,
   Smartphone,
   Trash2,
   Wallet,
@@ -31,11 +34,15 @@ import { formatMoney, formatDate } from "@/utils/format";
 import * as gastoService from "@/services/gastoService";
 import {
   CATEGORIA_LABELS,
+  type AjusteSaldo,
   type CategoriaGasto,
   type Gasto,
   type MetodoPagoGasto,
+  type ModoAjusteSaldo,
   type Saldo,
 } from "@/types/gasto";
+
+type Tab = "gastos" | "ajuste";
 
 const CATEGORIA_OPTIONS = (
   Object.keys(CATEGORIA_LABELS) as CategoriaGasto[]
@@ -78,21 +85,59 @@ function SaldoCard({
   );
 }
 
+/** Botón de pestaña (subrayado activo). */
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+        active
+          ? "border-accent text-accent"
+          : "border-transparent text-ink-soft hover:text-ink",
+      ].join(" ")}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
 export function GastosPage() {
   const toast = useToast();
   const { proveedores } = useCatalogos();
 
+  const [tab, setTab] = useState<Tab>("gastos");
+
   const [saldo, setSaldo] = useState<Saldo | null>(null);
   const [gastos, setGastos] = useState<Gasto[]>([]);
+  const [ajustes, setAjustes] = useState<AjusteSaldo[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Formulario.
+  // Formulario de gasto.
   const [categoria, setCategoria] = useState<CategoriaGasto>("pedido");
   const [metodo, setMetodo] = useState<MetodoPagoGasto>("efectivo");
   const [monto, setMonto] = useState("");
   const [proveedorId, setProveedorId] = useState("");
   const [descripcion, setDescripcion] = useState("");
+
+  // Formulario de ajuste de saldo.
+  const [aMetodo, setAMetodo] = useState<MetodoPagoGasto>("efectivo");
+  const [aModo, setAModo] = useState<ModoAjusteSaldo>("agregar");
+  const [aMonto, setAMonto] = useState("");
+  const [aMotivo, setAMotivo] = useState("");
 
   // Confirmación de borrado.
   const [porEliminar, setPorEliminar] = useState<Gasto | null>(null);
@@ -101,12 +146,14 @@ export function GastosPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, g] = await Promise.all([
+      const [s, g, a] = await Promise.all([
         gastoService.getSaldo(),
         gastoService.getGastos(),
+        gastoService.getAjustes(),
       ]);
       setSaldo(s);
       setGastos(g);
+      setAjustes(a);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo cargar");
     } finally {
@@ -157,6 +204,40 @@ export function GastosPage() {
       toast.error(e instanceof Error ? e.message : "No se pudo eliminar");
     } finally {
       setEliminando(false);
+    }
+  };
+
+  const handleAjustar = async () => {
+    const valor = parseFloat(aMonto);
+    if (Number.isNaN(valor) || valor < 0) {
+      toast.error("Ingresa un monto válido");
+      return;
+    }
+    if (aModo === "agregar" && valor <= 0) {
+      toast.error("El monto a agregar debe ser mayor que 0");
+      return;
+    }
+    if (!aMotivo.trim()) {
+      toast.error("La especificación (motivo) es obligatoria");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const actualizado = await gastoService.createAjuste({
+        metodo_pago: aMetodo,
+        modo: aModo,
+        monto: valor,
+        motivo: aMotivo.trim(),
+      });
+      setSaldo(actualizado);
+      setAMonto("");
+      setAMotivo("");
+      setAjustes(await gastoService.getAjustes());
+      toast.success("Saldo ajustado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo ajustar el saldo");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -218,6 +299,23 @@ export function GastosPage() {
             </div>
           ) : null}
 
+          {/* Pestañas */}
+          <div className="flex gap-1 border-b border-line">
+            <TabButton
+              active={tab === "gastos"}
+              onClick={() => setTab("gastos")}
+              icon={<PlusCircle size={15} />}
+              label="Gastos"
+            />
+            <TabButton
+              active={tab === "ajuste"}
+              onClick={() => setTab("ajuste")}
+              icon={<Sliders size={15} />}
+              label="Ajustar saldo"
+            />
+          </div>
+
+          {tab === "gastos" ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
             {/* Formulario de registro */}
             <div className="rounded-2xl border border-line bg-white p-5 shadow-card">
@@ -395,6 +493,198 @@ export function GastosPage() {
               )}
             </div>
           </div>
+          ) : (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+            {/* Formulario de ajuste */}
+            <div className="rounded-2xl border border-line bg-white p-5 shadow-card">
+              <h3 className="mb-1 text-sm font-semibold text-ink">
+                Ajustar saldo
+              </h3>
+              <p className="mb-3 text-xs text-ink-faint">
+                Agrega dinero a un método o fija su saldo a un valor exacto.
+                Requiere una especificación.
+              </p>
+
+              <div className="mb-3 flex flex-col gap-3">
+                {/* Método */}
+                <div>
+                  <p className="mb-1.5 text-sm font-medium text-ink-soft">
+                    Método de pago
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAMetodo("efectivo")}
+                      className={[
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                        aMetodo === "efectivo"
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                          : "border-line text-ink-soft hover:bg-line/40",
+                      ].join(" ")}
+                    >
+                      <Banknote size={16} />
+                      Efectivo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAMetodo("yape")}
+                      className={[
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                        aMetodo === "yape"
+                          ? "border-accent/40 bg-accent-soft text-accent"
+                          : "border-line text-ink-soft hover:bg-line/40",
+                      ].join(" ")}
+                    >
+                      <Smartphone size={16} />
+                      Yape
+                    </button>
+                  </div>
+                </div>
+
+                {/* Modo */}
+                <div>
+                  <p className="mb-1.5 text-sm font-medium text-ink-soft">
+                    Operación
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAModo("agregar")}
+                      className={[
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                        aModo === "agregar"
+                          ? "border-accent/40 bg-accent-soft text-accent"
+                          : "border-line text-ink-soft hover:bg-line/40",
+                      ].join(" ")}
+                    >
+                      <PlusCircle size={16} />
+                      Agregar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAModo("establecer")}
+                      className={[
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                        aModo === "establecer"
+                          ? "border-accent/40 bg-accent-soft text-accent"
+                          : "border-line text-ink-soft hover:bg-line/40",
+                      ].join(" ")}
+                    >
+                      <Pencil size={16} />
+                      Establecer
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-ink-soft">
+                    {aModo === "agregar" ? "Monto a agregar" : "Nuevo saldo"}
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={aMonto}
+                    onChange={(e) => setAMonto(e.target.value)}
+                    placeholder={aModo === "agregar" ? "Ej. 50.00" : "Ej. 500.00"}
+                    className="w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm focus:border-accent focus:shadow-focus focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-ink-soft">
+                    Especificación (motivo)
+                    <span className="ml-0.5 text-accent">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={aMotivo}
+                    onChange={(e) => setAMotivo(e.target.value)}
+                    placeholder="Ej. Aporte de capital / corrección de conteo"
+                    className="w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm focus:border-accent focus:shadow-focus focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                onClick={handleAjustar}
+                loading={submitting}
+                fullWidth
+              >
+                {aModo === "agregar" ? "Agregar al saldo" : "Establecer saldo"}
+              </Button>
+            </div>
+
+            {/* Historial de ajustes */}
+            <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+              <div className="border-b border-line px-5 py-3">
+                <h3 className="text-sm font-semibold text-ink">
+                  Ajustes recientes
+                </h3>
+              </div>
+              {ajustes.length === 0 ? (
+                <div className="px-5 py-12 text-center text-sm text-ink-faint">
+                  Aún no hay ajustes de saldo.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[560px] text-left text-sm">
+                    <thead className="bg-paper/50">
+                      <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
+                        <th className="px-5 py-3 font-medium">Fecha</th>
+                        <th className="px-5 py-3 font-medium">Método</th>
+                        <th className="px-5 py-3 font-medium">Especificación</th>
+                        <th className="px-5 py-3 text-right font-medium">Ajuste</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ajustes.map((a) => {
+                        const monto =
+                          typeof a.monto === "string"
+                            ? parseFloat(a.monto)
+                            : a.monto;
+                        const positivo = monto >= 0;
+                        return (
+                          <tr
+                            key={a.id}
+                            className="border-b border-line/60 last:border-0 hover:bg-paper/60"
+                          >
+                            <td className="whitespace-nowrap px-5 py-3 text-ink-soft">
+                              {formatDate(a.fecha)}
+                            </td>
+                            <td className="px-5 py-3">
+                              <span
+                                className={[
+                                  "rounded-full px-2 py-0.5 text-xs font-medium",
+                                  a.metodo_pago === "efectivo"
+                                    ? "bg-emerald-50 text-emerald-700"
+                                    : "bg-accent-soft text-accent",
+                                ].join(" ")}
+                              >
+                                {a.metodo_pago === "efectivo" ? "Efectivo" : "Yape"}
+                              </span>
+                            </td>
+                            <td className="px-5 py-3 text-ink-soft">{a.motivo}</td>
+                            <td
+                              className={[
+                                "px-5 py-3 text-right font-medium tabular-nums",
+                                positivo ? "text-emerald-600" : "text-danger",
+                              ].join(" ")}
+                            >
+                              {positivo ? "+" : "−"}{" "}
+                              {formatMoney(Math.abs(monto))}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+          )}
         </div>
       )}
 

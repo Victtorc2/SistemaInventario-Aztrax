@@ -69,3 +69,23 @@ export const CATEGORIA_LABELS: Record<CategoriaGasto, string> = {
   alquiler: "Alquiler",
   otro: "Otro",
 };
+
+// --- Ajustes manuales de saldo ----------------------------------------------
+
+export type ModoAjusteSaldo = "agregar" | "establecer";
+
+export interface AjusteSaldoPayload {
+  metodo_pago: MetodoPagoGasto;
+  modo: ModoAjusteSaldo;
+  monto: number;
+  motivo: string;
+}
+
+/** Un ajuste manual de saldo registrado (monto con signo). */
+export interface AjusteSaldo {
+  id: number;
+  metodo_pago: string;
+  monto: Money;
+  motivo: string;
+  fecha: string;
+}

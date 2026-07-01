@@ -8,7 +8,15 @@
 
 import { axiosClient } from "@/api/axiosClient";
 import { resolveAxiosError } from "@/utils/errorHandler";
-import type { Gasto, GastoFiltros, GastoPayload, Saldo } from "@/types/gasto";
+import type {
+  AjusteSaldo,
+  AjusteSaldoPayload,
+  Gasto,
+  GastoFiltros,
+  GastoPayload,
+  MetodoPagoGasto,
+  Saldo,
+} from "@/types/gasto";
 
 /** Dinero disponible por método de pago (efectivo/yape) y total. */
 export async function getSaldo(): Promise<Saldo> {
@@ -48,5 +56,34 @@ export async function deleteGasto(id: number): Promise<void> {
     await axiosClient.delete(`/gastos/${id}`);
   } catch (error) {
     throw new Error(resolveAxiosError(error, "No se pudo eliminar el gasto"));
+  }
+}
+
+/**
+ * Agrega o modifica el saldo de un método (con motivo). Devuelve el saldo
+ * actualizado.
+ */
+export async function createAjuste(
+  payload: AjusteSaldoPayload,
+): Promise<Saldo> {
+  try {
+    const { data } = await axiosClient.post<Saldo>("/gastos/ajustes", payload);
+    return data;
+  } catch (error) {
+    throw new Error(resolveAxiosError(error, "No se pudo ajustar el saldo"));
+  }
+}
+
+/** Historial de ajustes de saldo, más recientes primero. */
+export async function getAjustes(
+  metodo?: MetodoPagoGasto,
+): Promise<AjusteSaldo[]> {
+  try {
+    const { data } = await axiosClient.get<AjusteSaldo[]>("/gastos/ajustes", {
+      params: metodo ? { metodo_pago: metodo } : undefined,
+    });
+    return data;
+  } catch (error) {
+    throw new Error(resolveAxiosError(error, "No se pudieron cargar los ajustes"));
   }
 }
