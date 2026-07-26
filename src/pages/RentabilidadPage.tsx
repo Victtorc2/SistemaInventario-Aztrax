@@ -7,8 +7,16 @@
  * cambiar la agrupación.
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { RefreshCw, TrendingUp, Wallet, Coins, Percent } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  RefreshCw,
+  TrendingUp,
+  Wallet,
+  Coins,
+  Percent,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
   Bar,
@@ -270,8 +278,27 @@ function GananciaPorPeriodo({ data }: { data: ReporteRentabilidad }) {
   );
 }
 
+/** Productos por página en la tabla de rentabilidad. */
+const POR_PAGINA = 10;
+
 function RentabilidadPorProducto({ data }: { data: ReporteRentabilidad }) {
-  if (data.por_producto.length === 0) {
+  const [pagina, setPagina] = useState(1);
+
+  const total = data.por_producto.length;
+  const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+
+  // Si cambian los datos (nuevo filtro/refresco), vuelve a la primera página.
+  useEffect(() => {
+    setPagina(1);
+  }, [data]);
+
+  // Recorta la página vigente sin mutar el array original.
+  const visibles = useMemo(() => {
+    const inicio = (pagina - 1) * POR_PAGINA;
+    return data.por_producto.slice(inicio, inicio + POR_PAGINA);
+  }, [data.por_producto, pagina]);
+
+  if (total === 0) {
     return (
       <EmptyState
         icon={TrendingUp}
@@ -280,6 +307,9 @@ function RentabilidadPorProducto({ data }: { data: ReporteRentabilidad }) {
       />
     );
   }
+
+  const desde = (pagina - 1) * POR_PAGINA + 1;
+  const hasta = Math.min(pagina * POR_PAGINA, total);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
@@ -300,7 +330,7 @@ function RentabilidadPorProducto({ data }: { data: ReporteRentabilidad }) {
             </tr>
           </thead>
           <tbody>
-            {data.por_producto.map((p) => (
+            {visibles.map((p) => (
               <tr
                 key={p.producto_id ?? `libre-${p.nombre}`}
                 className="border-b border-line/60 transition-colors last:border-0 hover:bg-paper/60"
@@ -333,6 +363,39 @@ function RentabilidadPorProducto({ data }: { data: ReporteRentabilidad }) {
           </tbody>
         </table>
       </div>
+
+      {totalPaginas > 1 ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3">
+          <p className="text-xs text-ink-faint">
+            Mostrando <span className="font-medium text-ink-soft">{desde}</span>–
+            <span className="font-medium text-ink-soft">{hasta}</span> de{" "}
+            <span className="font-medium text-ink-soft">{total}</span> productos
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              disabled={pagina <= 1}
+              className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:border-accent/40 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ChevronLeft size={14} />
+              Anterior
+            </button>
+            <span className="px-2 text-sm tabular-nums text-ink-soft">
+              {pagina} / {totalPaginas}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              disabled={pagina >= totalPaginas}
+              className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:border-accent/40 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Siguiente
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
