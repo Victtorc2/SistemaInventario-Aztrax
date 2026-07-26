@@ -23,15 +23,6 @@ import { getErrorMessage } from "@/utils/errorHandler";
 import type { DashboardCompleto } from "@/types/dashboard";
 import type { Saldo } from "@/types/gasto";
 
-/** Periodos disponibles para el gráfico de ventas por día. */
-const PERIODOS = [
-  { label: "14 días", dias: 14 },
-  { label: "30 días", dias: 30 },
-  { label: "3 meses", dias: 90 },
-  { label: "6 meses", dias: 180 },
-  { label: "12 meses", dias: 365 },
-] as const;
-
 /** Nº de productos mostrados en el ranking de más vendidos. */
 const TOP_PRODUCTOS = 10;
 
@@ -43,8 +34,6 @@ export function InicioPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Días de historial del gráfico de ventas (permite ver meses anteriores).
-  const [dias, setDias] = useState(30);
 
   // `silent` evita el skeleton en refrescos manuales: conserva los datos
   // actuales y solo marca el botón como cargando.
@@ -54,10 +43,13 @@ export function InicioPage() {
       else setLoading(true);
       setError(null);
       try {
+        // La serie de ventas por día la maneja el propio VentasChart (con su
+        // navegación temporal), así que aquí pedimos una ventana mínima; solo
+        // nos interesan KPIs, métodos de pago y top productos.
         // El saldo es secundario: si su endpoint falla (p. ej. backend sin
         // migrar) no debe tumbar el dashboard, así que toleramos su error.
         const [dash, sal] = await Promise.all([
-          getDashboard(dias, TOP_PRODUCTOS),
+          getDashboard(1, TOP_PRODUCTOS),
           getSaldo().catch(() => null),
         ]);
         setData(dash);
@@ -70,7 +62,7 @@ export function InicioPage() {
         setRefreshing(false);
       }
     },
-    [dias],
+    [],
   );
 
   useEffect(() => {
@@ -90,25 +82,6 @@ export function InicioPage() {
       subtitle="Resumen general del sistema de inventario y ventas."
       actions={
         <div className="flex flex-wrap items-center gap-3">
-          <div className="hidden items-center gap-1 rounded-lg border border-line bg-white p-1 sm:inline-flex">
-            {PERIODOS.map((p) => (
-              <button
-                key={p.dias}
-                type="button"
-                onClick={() => setDias(p.dias)}
-                aria-pressed={dias === p.dias}
-                disabled={loading || refreshing}
-                className={[
-                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60",
-                  dias === p.dias
-                    ? "bg-accent text-white"
-                    : "text-ink-soft hover:bg-line/60",
-                ].join(" ")}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
           <div className="flex items-center gap-2">
             {updatedLabel ? (
               <span className="hidden text-xs text-ink-faint md:inline">
@@ -159,7 +132,7 @@ export function InicioPage() {
           <SaldoDisponibleCard saldo={saldo} />
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
-            <VentasChart data={data.ventas_por_dia} />
+            <VentasChart reloadToken={lastUpdated?.getTime() ?? 0} />
             <div className="flex flex-col gap-6">
               <MetodosPagoCard data={data.metodos_pago} />
               <TopProductosCard data={data.top_productos} />

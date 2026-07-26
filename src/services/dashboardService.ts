@@ -6,7 +6,11 @@
 
 import { axiosClient } from "@/api/axiosClient";
 import { resolveAxiosError } from "@/utils/errorHandler";
-import type { DashboardCompleto, ResumenDashboard } from "@/types/dashboard";
+import type {
+  DashboardCompleto,
+  ResumenDashboard,
+  VentaPorDia,
+} from "@/types/dashboard";
 
 /** Obtiene las métricas completas del dashboard. */
 export async function getDashboard(
@@ -20,6 +24,27 @@ export async function getDashboard(
     return data;
   } catch (error) {
     throw new Error(resolveAxiosError(error, "No se pudo cargar el dashboard"));
+  }
+}
+
+/**
+ * Serie de ventas por día en un rango de fechas (para el gráfico con
+ * navegación temporal). Las fechas van en formato ISO "YYYY-MM-DD".
+ */
+export async function getVentasPorDia(
+  desde: string,
+  hasta: string,
+): Promise<VentaPorDia[]> {
+  try {
+    const { data } = await axiosClient.get<VentaPorDia[]>(
+      "/dashboard/ventas-por-dia",
+      { params: { desde, hasta } },
+    );
+    return data;
+  } catch (error) {
+    throw new Error(
+      resolveAxiosError(error, "No se pudieron cargar las ventas por día"),
+    );
   }
 }
 

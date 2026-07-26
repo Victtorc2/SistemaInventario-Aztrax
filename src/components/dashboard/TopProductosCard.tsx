@@ -1,11 +1,24 @@
 /**
- * TopProductosCard: ranking de productos más vendidos.
+ * TopProductosCard: ranking de productos más vendidos como gráfico de barras
+ * horizontales.
  *
- * Lista los productos por unidades vendidas, con su posición, nombre, unidades
- * y monto (alineado a la derecha para escaneo rápido). El primer puesto se
- * destaca. Pensado como columna lateral del dashboard.
+ * Cada barra representa un producto y su longitud las unidades vendidas
+ * (ordenadas de mayor a menor). El líder se resalta con el color de acento y
+ * el resto en un tono más suave, para comparar de un vistazo. El tooltip
+ * añade el detalle (marca/modelo/color) y el monto facturado. Pensado como
+ * columna lateral del dashboard.
  */
 
+import {
+  Bar,
+  BarChart,
+  Cell,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { TrendingUp } from "lucide-react";
 import { formatMoney } from "@/utils/format";
 import type { TopProducto } from "@/types/dashboard";
@@ -19,12 +32,22 @@ function toNum(v: string | number): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
+/** Recorta nombres largos para que quepan en el eje. */
+function corto(nombre: string, max = 16): string {
+  return nombre.length > max ? `${nombre.slice(0, max - 1)}…` : nombre;
+}
+
 export function TopProductosCard({ data }: TopProductosCardProps) {
-  // Unidades del líder para dimensionar la barra de proporción.
-  const maxUnidades = data.reduce(
-    (max, p) => Math.max(max, p.unidades_vendidas),
-    0,
-  );
+  const chartData = data.map((p) => ({
+    nombre: corto(p.nombre),
+    nombreFull: p.nombre,
+    detalle: [p.marca, p.modelo, p.color].filter(Boolean).join(" · "),
+    unidades: p.unidades_vendidas,
+    monto: toNum(p.monto_vendido),
+  }));
+
+  // Altura proporcional al nº de barras (mínimo cómodo para pocas).
+  const altura = Math.max(200, chartData.length * 38);
 
   return (
     <div className="rounded-2xl border border-line bg-white p-5 shadow-card">
@@ -33,63 +56,65 @@ export function TopProductosCard({ data }: TopProductosCardProps) {
           <TrendingUp size={14} />
         </span>
         <h2 className="text-sm font-semibold tracking-tight">Más vendidos</h2>
+        {chartData.length > 0 ? (
+          <span className="ml-auto text-xs text-ink-faint">
+            Top {chartData.length}
+          </span>
+        ) : null}
       </div>
 
-      {data.length === 0 ? (
+      {chartData.length === 0 ? (
         <p className="py-6 text-center text-sm text-ink-faint">
           Aún no hay ventas registradas.
         </p>
       ) : (
-        <ol className="flex flex-col gap-1">
-          {data.map((p, i) => {
-            const monto = toNum(p.monto_vendido);
-            const pct =
-              maxUnidades > 0
-                ? Math.round((p.unidades_vendidas / maxUnidades) * 100)
-                : 0;
-            return (
-              <li
-                key={p.producto_id}
-                className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-accent-soft/50"
-              >
-                <span
-                  className={[
-                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums",
-                    i === 0 ? "bg-accent text-white" : "bg-line/70 text-ink-soft",
-                  ].join(" ")}
-                >
-                  {i + 1}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate text-sm font-medium text-ink">
-                      {p.nombre}
-                    </p>
-                    <p className="shrink-0 text-sm font-semibold tabular-nums text-ink">
-                      {formatMoney(monto)}
-                    </p>
-                  </div>
-                  {(p.marca || p.modelo || p.color) && (
-                    <p className="truncate text-xs text-ink-faint">
-                      {[p.marca, p.modelo, p.color].filter(Boolean).join(" · ")}
-                    </p>
-                  )}
-                  <div className="mt-1 flex items-center gap-2">
-                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-line">
-                      <div
-                        className="h-full rounded-full bg-accent/60 transition-all duration-700 ease-out"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="shrink-0 text-xs tabular-nums text-ink-faint">
-                      {p.unidades_vendidas} uds
-                    </span>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        <div style={{ height: altura }} className="w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              layout="vertical"
+              margin={{ top: 0, right: 32, left: 0, bottom: 0 }}
+              barCategoryGap="22%"
+            >
+              <XAxis type="number" hide />
+              <YAxis
+                type="category"
+                dataKey="nombre"
+                width={104}
+                tick={{ fontSize: 11, fill: "#6b6780" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                cursor={{ fill: "rgba(99,102,241,0.06)" }}
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "1px solid #ebe7f2",
+                  fontSize: 12,
+                  boxShadow: "0 4px 16px -4px rgba(99,102,241,0.15)",
+                }}
+                formatter={(value, _name, item) => {
+                  const row = item?.payload ?? {};
+                  const detalle = row.detalle ? ` · ${row.detalle}` : "";
+                  return [
+                    `${value} uds · ${formatMoney(row.monto ?? 0)}`,
+                    `${row.nombreFull ?? ""}${detalle}`,
+                  ];
+                }}
+              />
+              <Bar dataKey="unidades" radius={[0, 6, 6, 0]} maxBarSize={22}>
+                {chartData.map((_, i) => (
+                  <Cell key={i} fill={i === 0 ? "#6366f1" : "#c7d2fe"} />
+                ))}
+                <LabelList
+                  dataKey="unidades"
+                  position="right"
+                  style={{ fontSize: 11, fill: "#6b6780", fontWeight: 600 }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

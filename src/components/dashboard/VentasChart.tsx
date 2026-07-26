@@ -1,12 +1,14 @@
 /**
- * VentasChart: gráfico de área de ventas por día.
+ * VentasChart: gráfico de área de ventas por día con navegación temporal.
  *
- * Usa recharts. La cabecera resume el periodo (total facturado, promedio diario
- * y día pico) para dar contexto de un vistazo; el eje X muestra la fecha corta
- * y el eje Y el monto. Diseño sobrio, acorde al estilo minimalista del sistema.
+ * Maneja su propia ventana de fechas: un selector de tamaño (14 / 30 / 90 días)
+ * y flechas para retroceder o avanzar por periodos anteriores (útil porque el
+ * sistema opera desde junio y se quiere revisar meses pasados). Cada vez que
+ * cambia la ventana consulta /dashboard/ventas-por-dia. La cabecera resume el
+ * periodo (total facturado, promedio diario y día pico).
  */
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -16,17 +18,35 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { LineChart } from "lucide-react";
+import { ChevronLeft, ChevronRight, LineChart } from "lucide-react";
 import { formatMoney } from "@/utils/format";
+import { getVentasPorDia } from "@/services/dashboardService";
+import { getErrorMessage } from "@/utils/errorHandler";
 import type { VentaPorDia } from "@/types/dashboard";
 
 interface VentasChartProps {
-  data: VentaPorDia[];
+  /** Cambia este valor para forzar una recarga (p. ej. desde el botón global). */
+  reloadToken?: number;
 }
+
+/** Tamaños de ventana disponibles (en días). */
+const VENTANAS = [
+  { label: "14 días", dias: 14 },
+  { label: "30 días", dias: 30 },
+  { label: "3 meses", dias: 90 },
+] as const;
 
 function toNum(v: string | number): number {
   const n = typeof v === "string" ? parseFloat(v) : v;
   return Number.isNaN(n) ? 0 : n;
+}
+
+/** Fecha local a ISO "YYYY-MM-DD" (sin corrimiento por zona horaria). */
+function fmtISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 /** Formatea "2026-05-28" -> "28 may". */
@@ -35,7 +55,43 @@ function fechaCorta(iso: string): string {
   return d.toLocaleDateString("es-PE", { day: "2-digit", month: "short" });
 }
 
-export function VentasChart({ data }: VentasChartProps) {
+export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
+  const [dias, setDias] = useState(30);
+  // offset = nº de ventanas hacia atrás (0 = ventana que termina hoy).
+  const [offset, setOffset] = useState(0);
+  const [data, setData] = useState<VentaPorDia[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Rango de la ventana actual, según tamaño y desplazamiento.
+  const { desde, hasta } = useMemo(() => {
+    const fin = new Date();
+    fin.setHours(0, 0, 0, 0);
+    fin.setDate(fin.getDate() - offset * dias);
+    const ini = new Date(fin);
+    ini.setDate(ini.getDate() - (dias - 1));
+    return { desde: fmtISO(ini), hasta: fmtISO(fin) };
+  }, [dias, offset]);
+
+  useEffect(() => {
+    let vivo = true;
+    setLoading(true);
+    setError(null);
+    getVentasPorDia(desde, hasta)
+      .then((serie) => {
+        if (vivo) setData(serie);
+      })
+      .catch((e) => {
+        if (vivo) setError(getErrorMessage(e, "No se pudo cargar el gráfico"));
+      })
+      .finally(() => {
+        if (vivo) setLoading(false);
+      });
+    return () => {
+      vivo = false;
+    };
+  }, [desde, hasta, reloadToken]);
+
   const chartData = useMemo(
     () =>
       data.map((d) => ({
@@ -59,12 +115,19 @@ export function VentasChart({ data }: VentasChartProps) {
     };
   }, [chartData]);
 
+  const cambiarVentana = useCallback((n: number) => {
+    setDias(n);
+    setOffset(0); // al cambiar el tamaño, volvemos al periodo actual
+  }, []);
+
+  const rangoLabel = `${fechaCorta(desde)} – ${fechaCorta(hasta)}`;
+
   return (
     <div className="rounded-2xl border border-line bg-white p-5 shadow-card">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold tracking-tight">Ventas por día</h2>
-          <p className="text-xs text-ink-faint">Monto facturado en el periodo</p>
+          <p className="text-xs text-ink-faint">{rangoLabel}</p>
         </div>
         {resumen ? (
           <div className="flex items-center gap-5">
@@ -78,14 +141,74 @@ export function VentasChart({ data }: VentasChartProps) {
         ) : null}
       </div>
 
-      {chartData.length === 0 ? (
+      {/* Controles: navegación temporal + tamaño de ventana */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setOffset((o) => o + 1)}
+            disabled={loading}
+            aria-label="Periodo anterior"
+            className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronLeft size={14} />
+            Anterior
+          </button>
+          <button
+            type="button"
+            onClick={() => setOffset((o) => Math.max(0, o - 1))}
+            disabled={loading || offset === 0}
+            aria-label="Periodo siguiente"
+            className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Siguiente
+            <ChevronRight size={14} />
+          </button>
+          {offset > 0 ? (
+            <button
+              type="button"
+              onClick={() => setOffset(0)}
+              className="ml-1 rounded-lg px-2 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+            >
+              Hoy
+            </button>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border border-line bg-white p-1">
+          {VENTANAS.map((v) => (
+            <button
+              key={v.dias}
+              type="button"
+              onClick={() => cambiarVentana(v.dias)}
+              aria-pressed={dias === v.dias}
+              className={[
+                "rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+                dias === v.dias
+                  ? "bg-accent text-white"
+                  : "text-ink-soft hover:bg-line/60",
+              ].join(" ")}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error ? (
+        <div className="flex h-64 flex-col items-center justify-center gap-1 text-center">
+          <p className="text-sm font-medium text-danger">{error}</p>
+          <p className="text-xs text-ink-faint">Prueba a refrescar la página.</p>
+        </div>
+      ) : loading ? (
+        <div className="h-64 w-full animate-pulse rounded-xl border border-line bg-line/40" />
+      ) : chartData.length === 0 || resumen?.total === 0 ? (
         <div className="flex h-64 flex-col items-center justify-center gap-2 text-center">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft text-accent">
             <LineChart size={20} />
           </div>
           <p className="text-sm font-medium text-ink-soft">Sin ventas en el periodo</p>
           <p className="text-xs text-ink-faint">
-            Las ventas que registres aparecerán aquí.
+            Usa las flechas para revisar otros meses.
           </p>
         </div>
       ) : (
