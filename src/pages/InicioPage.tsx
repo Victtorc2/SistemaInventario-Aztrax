@@ -7,7 +7,7 @@
  * refresco manual que conserva los datos en pantalla mientras recarga.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -28,6 +28,16 @@ const TOP_PRODUCTOS = 10;
 
 export function InicioPage() {
   const { user } = useAuth();
+  const [mes, setMes] = useState(() => {
+    const partes = new Intl.DateTimeFormat("en", {
+      timeZone: "America/Lima", year: "numeric", month: "2-digit",
+    }).formatToParts(new Date());
+    return partes.find(p => p.type === "year")!.value + "-" + partes.find(p => p.type === "month")!.value;
+  });
+  const requestId = useRef(0);
+  const periodo = mes
+    ? new Date(mes + "-01T12:00:00").toLocaleDateString("es-PE", { month: "long", year: "numeric" })
+    : "Histórico";
   const [data, setData] = useState<DashboardCompleto | null>(null);
   const [saldo, setSaldo] = useState<Saldo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,6 +49,7 @@ export function InicioPage() {
   // actuales y solo marca el botón como cargando.
   const load = useCallback(
     async (silent = false) => {
+      const id = ++requestId.current;
       if (silent) setRefreshing(true);
       else setLoading(true);
       setError(null);
@@ -49,24 +60,29 @@ export function InicioPage() {
         // El saldo es secundario: si su endpoint falla (p. ej. backend sin
         // migrar) no debe tumbar el dashboard, así que toleramos su error.
         const [dash, sal] = await Promise.all([
-          getDashboard(1, TOP_PRODUCTOS),
+          getDashboard(1, TOP_PRODUCTOS, mes || undefined),
           getSaldo().catch(() => null),
         ]);
+        if (id !== requestId.current) return;
         setData(dash);
         setSaldo(sal);
         setLastUpdated(new Date());
       } catch (e) {
+        if (id !== requestId.current) return;
         setError(getErrorMessage(e, "No se pudo cargar el dashboard"));
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (id === requestId.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [],
+    [mes],
   );
 
   useEffect(() => {
     void load();
+    return () => { requestId.current += 1; };
   }, [load]);
 
   const updatedLabel = lastUpdated
@@ -104,6 +120,31 @@ export function InicioPage() {
         </div>
       }
     >
+      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-white p-4">
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink" htmlFor="mes-ventas">
+          Consultar ventas por mes
+          <input id="mes-ventas" type="month" value={mes} min="1000-01" max="9998-12"
+            onChange={(event) => {
+              const value = event.target.value;
+              if (value === mes || (value && (!event.target.validity.valid || !/^\d{4}-\d{2}$/.test(value)))) return;
+              requestId.current += 1;
+              setLoading(true);
+              setMes(value);
+            }}
+            className="rounded-lg border border-line bg-white px-3 py-2 text-sm" />
+        </label>
+        <button type="button" disabled={!mes} onClick={() => {
+          requestId.current += 1;
+          setLoading(true);
+          setMes("");
+        }} className="rounded-lg border border-line px-3 py-2 text-sm disabled:opacity-50">
+          Ver histórico
+        </button>
+        <p className="text-xs text-ink-faint">
+          {mes ? "Ventas de " + periodo + ". Ranking por unidades vendidas." : "Totales y ranking históricos; gráfico con navegación por fechas."}
+          {" "}No incluye ventas anuladas. Fechas del mes en hora de Perú.
+        </p>
+      </div>
       {error ? (
         <div
           role="alert"
@@ -127,15 +168,15 @@ export function InicioPage() {
             refreshing ? "opacity-60" : "opacity-100"
           }`}
         >
-          <DashboardStats resumen={data.resumen} />
+          <DashboardStats resumen={data.resumen} periodo={mes ? periodo : undefined} />
 
           <SaldoDisponibleCard saldo={saldo} />
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
-            <VentasChart reloadToken={lastUpdated?.getTime() ?? 0} />
+            <VentasChart monthlyData={mes ? data.ventas_por_dia : undefined} reloadToken={lastUpdated?.getTime() ?? 0} />
             <div className="flex flex-col gap-6">
               <MetodosPagoCard data={data.metodos_pago} />
-              <TopProductosCard data={data.top_productos} />
+              <TopProductosCard data={data.top_productos} periodo={mes ? periodo : undefined} />
             </div>
           </div>
         </div>

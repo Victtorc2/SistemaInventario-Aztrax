@@ -25,6 +25,7 @@ import type { TopProducto } from "@/types/dashboard";
 
 interface TopProductosCardProps {
   data: TopProducto[];
+  periodo?: string;
 }
 
 function toNum(v: string | number): number {
@@ -37,7 +38,7 @@ function corto(nombre: string, max = 16): string {
   return nombre.length > max ? `${nombre.slice(0, max - 1)}…` : nombre;
 }
 
-export function TopProductosCard({ data }: TopProductosCardProps) {
+export function TopProductosCard({ data, periodo }: TopProductosCardProps) {
   const chartData = data.map((p) => ({
     nombre: corto(p.nombre),
     nombreFull: p.nombre,
@@ -55,7 +56,7 @@ export function TopProductosCard({ data }: TopProductosCardProps) {
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent-soft text-accent">
           <TrendingUp size={14} />
         </span>
-        <h2 className="text-sm font-semibold tracking-tight">Más vendidos</h2>
+        <h2 className="text-sm font-semibold tracking-tight">{periodo ? `Más vendidos · ${periodo}` : "Más vendidos"}</h2>
         {chartData.length > 0 ? (
           <span className="ml-auto text-xs text-ink-faint">
             Top {chartData.length}
@@ -65,7 +66,7 @@ export function TopProductosCard({ data }: TopProductosCardProps) {
 
       {chartData.length === 0 ? (
         <p className="py-6 text-center text-sm text-ink-faint">
-          Aún no hay ventas registradas.
+          No hay productos vendidos en este periodo.
         </p>
       ) : (
         <div style={{ height: altura }} className="w-full">

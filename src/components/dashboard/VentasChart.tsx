@@ -27,6 +27,7 @@ import type { VentaPorDia } from "@/types/dashboard";
 interface VentasChartProps {
   /** Cambia este valor para forzar una recarga (p. ej. desde el botón global). */
   reloadToken?: number;
+  monthlyData?: VentaPorDia[];
 }
 
 /** Tamaños de ventana disponibles (en días). */
@@ -55,7 +56,7 @@ function fechaCorta(iso: string): string {
   return d.toLocaleDateString("es-PE", { day: "2-digit", month: "short" });
 }
 
-export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
+export function VentasChart({ reloadToken = 0, monthlyData }: VentasChartProps) {
   const [dias, setDias] = useState(30);
   // offset = nº de ventanas hacia atrás (0 = ventana que termina hoy).
   const [offset, setOffset] = useState(0);
@@ -74,6 +75,7 @@ export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
   }, [dias, offset]);
 
   useEffect(() => {
+    if (monthlyData) return;
     let vivo = true;
     setLoading(true);
     setError(null);
@@ -90,16 +92,16 @@ export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
     return () => {
       vivo = false;
     };
-  }, [desde, hasta, reloadToken]);
+  }, [desde, hasta, reloadToken, monthlyData]);
 
   const chartData = useMemo(
     () =>
-      data.map((d) => ({
+      (monthlyData ?? data).map((d) => ({
         fecha: fechaCorta(d.fecha),
         monto: toNum(d.monto),
         cantidad: d.cantidad,
       })),
-    [data],
+    [data, monthlyData],
   );
 
   // Resumen del periodo: total, promedio diario y día con mayor monto.
@@ -120,7 +122,9 @@ export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
     setOffset(0); // al cambiar el tamaño, volvemos al periodo actual
   }, []);
 
-  const rangoLabel = `${fechaCorta(desde)} – ${fechaCorta(hasta)}`;
+  const rangoLabel = monthlyData?.length
+    ? `${fechaCorta(monthlyData[0].fecha)} – ${fechaCorta(monthlyData[monthlyData.length - 1].fecha)}`
+    : `${fechaCorta(desde)} – ${fechaCorta(hasta)}`;
 
   return (
     <div className="rounded-2xl border border-line bg-white p-5 shadow-card">
@@ -142,7 +146,7 @@ export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
       </div>
 
       {/* Controles: navegación temporal + tamaño de ventana */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      {!monthlyData && <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -192,14 +196,14 @@ export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
             </button>
           ))}
         </div>
-      </div>
+      </div>}
 
-      {error ? (
+      {!monthlyData && error ? (
         <div className="flex h-64 flex-col items-center justify-center gap-1 text-center">
           <p className="text-sm font-medium text-danger">{error}</p>
           <p className="text-xs text-ink-faint">Prueba a refrescar la página.</p>
         </div>
-      ) : loading ? (
+      ) : !monthlyData && loading ? (
         <div className="h-64 w-full animate-pulse rounded-xl border border-line bg-line/40" />
       ) : chartData.length === 0 || resumen?.total === 0 ? (
         <div className="flex h-64 flex-col items-center justify-center gap-2 text-center">
@@ -208,7 +212,7 @@ export function VentasChart({ reloadToken = 0 }: VentasChartProps) {
           </div>
           <p className="text-sm font-medium text-ink-soft">Sin ventas en el periodo</p>
           <p className="text-xs text-ink-faint">
-            Usa las flechas para revisar otros meses.
+            {monthlyData ? "Selecciona otro mes para revisar sus ventas." : "Usa las flechas para revisar otros meses."}
           </p>
         </div>
       ) : (

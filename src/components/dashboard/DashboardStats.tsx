@@ -23,6 +23,7 @@ import type { ResumenDashboard } from "@/types/dashboard";
 
 interface DashboardStatsProps {
   resumen: ResumenDashboard;
+  periodo?: string;
 }
 
 type Tone = "indigo" | "sky" | "emerald" | "violet" | "warning" | "danger";
@@ -39,7 +40,7 @@ interface StatCardData {
   alert?: boolean;
 }
 
-export function DashboardStats({ resumen }: DashboardStatsProps) {
+export function DashboardStats({ resumen, periodo }: DashboardStatsProps) {
   const bajoStock = resumen.productos_bajo_stock;
   const agotados = resumen.productos_agotados;
 
@@ -55,9 +56,9 @@ export function DashboardStats({ resumen }: DashboardStatsProps) {
     {
       // Facturación acumulada de ventas (histórico). NO es el dinero disponible:
       // ese se ve en la tarjeta "Dinero disponible", que sí resta gastos.
-      label: "Total vendido",
+      label: periodo ? "Total vendido en el mes" : "Total vendido",
       value: formatMoney(resumen.monto_total),
-      hint: `Facturado en ${resumen.ventas_total} ventas`,
+      hint: `${resumen.ventas_total} ventas · ${periodo ?? "Histórico"}`,
       icon: TrendingUp,
       tone: "emerald",
       to: "/historial",
@@ -65,7 +66,7 @@ export function DashboardStats({ resumen }: DashboardStatsProps) {
     {
       label: "Ticket promedio",
       value: formatMoney(resumen.ticket_promedio),
-      hint: "Por venta registrada",
+      hint: periodo ? `Por venta · ${periodo}` : "Por venta registrada",
       icon: Receipt,
       tone: "sky",
     },

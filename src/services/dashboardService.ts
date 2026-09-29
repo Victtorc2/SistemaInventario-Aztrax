@@ -16,10 +16,11 @@ import type {
 export async function getDashboard(
   dias = 14,
   top = 5,
+  mes?: string,
 ): Promise<DashboardCompleto> {
   try {
     const { data } = await axiosClient.get<DashboardCompleto>("/dashboard", {
-      params: { dias, top },
+      params: { dias, top, mes },
     });
     return data;
   } catch (error) {
