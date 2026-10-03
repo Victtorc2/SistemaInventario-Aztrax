@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   AlertTriangle,
   History,
+  Search,
   Users,
   LineChart,
   Wallet,
@@ -40,6 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/gastos", label: "Gastos y saldo", icon: Receipt },
   { to: "/productos-por-pedir", label: "Productos por pedir", icon: AlertTriangle },
   { to: "/historial", label: "Historial", icon: History },
+  { to: "/ventas-por-producto", label: "Ventas por producto", icon: Search },
   { to: "/rentabilidad", label: "Rentabilidad", icon: LineChart },
 ];
 

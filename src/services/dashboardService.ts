@@ -12,6 +12,28 @@ import type {
   VentaPorDia,
 } from "@/types/dashboard";
 
+export interface VentasProductoResultado {
+  total: number;
+  page: number;
+  page_size: number;
+  items: {
+    producto_id: number; codigo: string; nombre: string; marca: string;
+    modelo: string | null; color: string | null; activo: boolean;
+    veces_vendido: number; unidades_vendidas: number;
+  }[];
+}
+
+export async function getVentasProducto(q: string, page: number): Promise<VentasProductoResultado> {
+  try {
+    const { data } = await axiosClient.get<VentasProductoResultado>("/dashboard/ventas-por-producto", {
+      params: { q, page, page_size: 20 },
+    });
+    return data;
+  } catch (error) {
+    throw new Error(resolveAxiosError(error, "No se pudieron consultar las ventas por producto"));
+  }
+}
+
 /** Obtiene las métricas completas del dashboard. */
 export async function getDashboard(
   dias = 14,

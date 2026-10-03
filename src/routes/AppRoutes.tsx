@@ -40,6 +40,9 @@ const VentasPage = lazy(() =>
 const HistorialPage = lazy(() =>
   import("@/pages/HistorialPage").then((m) => ({ default: m.HistorialPage })),
 );
+const VentasProductoPage = lazy(() =>
+  import("@/pages/VentasProductoPage").then((m) => ({ default: m.VentasProductoPage })),
+);
 const ClientesPage = lazy(() =>
   import("@/pages/ClientesPage").then((m) => ({ default: m.ClientesPage })),
 );
@@ -97,6 +100,7 @@ export function AppRoutes() {
             element={lazyRoute(<ProductosPorPedirPage />)}
           />
           <Route path="/historial" element={lazyRoute(<HistorialPage />)} />
+          <Route path="/ventas-por-producto" element={lazyRoute(<VentasProductoPage />)} />
           <Route
             path="/historial/:id/boleta"
             element={lazyRoute(<BoletaPreviewPage />)}
