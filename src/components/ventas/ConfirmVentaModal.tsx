@@ -15,7 +15,9 @@ interface ConfirmVentaModalProps {
   totals: CartTotals;
   metodoPago: MetodoPago;
   submitting: boolean;
-  onConfirm: () => void;
+  fecha: string;
+  onFechaChange: (fecha: string) => void;
+  onConfirm: (fecha: string) => void;
   onClose: () => void;
 }
 
@@ -24,10 +26,19 @@ export function ConfirmVentaModal({
   totals,
   metodoPago,
   submitting,
+  fecha,
+  onFechaChange,
   onConfirm,
   onClose,
 }: ConfirmVentaModalProps) {
   const metodoLabel = metodoPago === "yape" ? "Yape" : "Efectivo";
+  const hoy = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  const limite = new Date(`${hoy}T12:00:00Z`);
+  limite.setUTCDate(limite.getUTCDate() - 4);
+  const minima = limite.toISOString().slice(0, 10);
+  const fechaInvalida = !!fecha && (fecha < minima || fecha > hoy);
   return (
     <Modal
       open={open}
@@ -63,11 +74,33 @@ export function ConfirmVentaModal({
         </div>
       </div>
 
+      <div className="mt-4">
+        <label htmlFor="fecha-boleta" className="block text-sm font-medium text-ink">
+          Fecha de la boleta
+        </label>
+        <input
+          id="fecha-boleta"
+          type="date"
+          value={fecha || hoy}
+          min={minima}
+          max={hoy}
+          disabled={submitting}
+          onChange={(event) => onFechaChange(event.target.value)}
+          aria-describedby="fecha-boleta-ayuda"
+          aria-invalid={fechaInvalida}
+          className="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm"
+        />
+        <p id="fecha-boleta-ayuda" className="mt-1 text-xs text-ink-soft">
+          Puedes elegir hoy o hasta 4 días anteriores, según la fecha de Perú.
+        </p>
+        {fechaInvalida && <p role="alert" className="mt-1 text-sm text-red-600">Elige una fecha dentro del plazo permitido.</p>}
+      </div>
+
       <div className="mt-6 flex items-center justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
           Volver
         </Button>
-        <Button type="button" onClick={onConfirm} loading={submitting}>
+        <Button type="button" onClick={() => onConfirm(fecha || hoy)} loading={submitting} disabled={fechaInvalida}>
           Confirmar venta
         </Button>
       </div>

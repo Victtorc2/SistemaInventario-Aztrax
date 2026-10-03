@@ -95,6 +95,7 @@ export function VentasPage() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [libreOpen, setLibreOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [fechaBoleta, setFechaBoleta] = useState("");
 
   // Carga de clientes (una vez).
   useEffect(() => {
@@ -169,7 +170,7 @@ export function VentasPage() {
   };
 
   // --- Confirmar venta ---
-  const handleConfirm = async () => {
+  const handleConfirm = async (fecha: string) => {
     if (cart.isEmpty) {
       toast.warning("Carrito vacío");
       return;
@@ -191,6 +192,7 @@ export function VentasPage() {
         clienteNombre: cart.clienteNombre,
         clienteDocumento: cart.clienteDocumento,
       });
+      payload.fecha = fecha;
       const venta = await ventaService.createVenta(payload);
       const credito = venta.tipo_pago === "credito";
       toast.success(
@@ -199,6 +201,7 @@ export function VentasPage() {
           : `Venta registrada · ${venta.numero_boleta}`,
       );
       cart.clear();
+      setFechaBoleta("");
       setConfirmOpen(false);
       // Refrescamos resultados para reflejar el stock descontado.
       await loadProductos(debouncedSearch);
@@ -215,6 +218,7 @@ export function VentasPage() {
   // --- Cancelar venta ---
   const handleCancel = () => {
     cart.clear();
+    setFechaBoleta("");
     setCancelOpen(false);
     toast.info("Venta cancelada");
   };
@@ -340,6 +344,8 @@ export function VentasPage() {
         totals={cart.totals}
         metodoPago={cart.metodoPago}
         submitting={submitting}
+        fecha={fechaBoleta}
+        onFechaChange={setFechaBoleta}
         onConfirm={handleConfirm}
         onClose={() => {
           if (!submitting) setConfirmOpen(false);

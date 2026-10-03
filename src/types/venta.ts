@@ -24,6 +24,7 @@ export type VentaItemPayload =
 
 /** Payload para registrar una venta. */
 export interface VentaPayload {
+  fecha?: string;
   items: VentaItemPayload[];
   descuento: number;
   // El backend acepta "monto" | "porcentaje"; null/omitido si no hay descuento.
